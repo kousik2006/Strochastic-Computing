@@ -4,6 +4,12 @@ This repository documents an **8-bit stochastic computing (SC) multiplier study*
 
 The work is aimed at understanding how **finite stochastic bitstreams, SNG sequence quality, LFSR polynomial choice, seed selection, and stream dependence** affect multiplication accuracy, with the eventual goal of translating the selected architecture into **RTL hardware**.
 
+## Authors & Affiliation
+
+**Kousik Kar** and **Mustab Al Mamun**  
+**Jadavpur University**  
+**Department of Electronics & Tele-Communication Engineering (ETCE)**
+
 ---
 
 ## Project Objective
@@ -496,9 +502,11 @@ The results should therefore be interpreted as **experimental findings for this 
 
 ---
 
-## Author
+## Authors & Affiliation
 
 **Kousik Kar**  
-B.Tech — Electronics / VLSI-oriented coursework and projects
+**Mustab Al Mamun**  
+**Jadavpur University**  
+**Department of Electronics & Tele-Communication Engineering (ETCE)**
 
 This repository is part of an ongoing exploration of **stochastic computing, hardware-oriented SNG design, RTL implementation, and digital arithmetic architectures**.
