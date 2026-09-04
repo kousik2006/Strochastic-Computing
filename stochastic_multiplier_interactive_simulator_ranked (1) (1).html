@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stochastic Multiplier — Interactive LFSR SNG Simulator</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --text:#18202a; --muted:#667085;
+    --border:#dfe3ea; --accent:#315efb; --accent2:#7c3aed;
+    --good:#16855b; --bad:#d04444; --warn:#b7791f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  .wrap{max-width:1200px;margin:auto;padding:24px}
+  h1{margin:0 0 6px;font-size:28px}
+  .subtitle{color:var(--muted);margin-bottom:22px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px}
+  .section-title{font-size:17px;font-weight:750;margin-bottom:14px}
+  .controls{display:grid;grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px}
+  label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px}
+  select,input{width:100%;height:40px;border:1px solid var(--border);border-radius:9px;padding:0 10px;font-size:14px;background:white;color:var(--text)}
+  input[type=number]{appearance:textfield}
+  button{border:0;border-radius:9px;padding:11px 15px;font-weight:750;cursor:pointer;background:var(--accent);color:white}
+  button.secondary{background:#eef2ff;color:#2947ad}
+  button:active{transform:translateY(1px)}
+  .actions{display:flex;gap:9px;align-items:end;margin-top:18px;flex-wrap:wrap}
+  .preset{display:flex;gap:8px;flex-wrap:wrap}
+  .preset button{background:#f0f2f6;color:#303846;border:1px solid var(--border)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .stream-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .stream-card{border:1px solid var(--border);border-radius:12px;padding:14px}
+  .stream-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+  .stream-name{font-weight:800}
+  .density{font-size:13px;color:var(--muted)}
+  .bits{display:flex;gap:2px;flex-wrap:wrap;line-height:1}
+  .bit{width:18px;height:24px;border-radius:4px;background:#e8ebf0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#657080}
+  .bit.one{background:#263b77;color:white}
+  .bit.out{background:#5b21b6;color:white}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .metric{border:1px solid var(--border);border-radius:11px;padding:12px}
+  .metric .k{font-size:11px;color:var(--muted);font-weight:700}
+  .metric .v{font-size:20px;font-weight:800;margin-top:5px}
+  .metric .s{font-size:11px;color:var(--muted);margin-top:3px}
+  .good{color:var(--good)} .bad{color:var(--bad)} .neutral{color:var(--text)}
+  .result{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .hero{border:1px solid var(--border);border-radius:12px;padding:16px;background:#fbfcff}
+  .hero .big{font-size:34px;font-weight:850}
+  .hero .small{color:var(--muted);font-size:13px}
+  .formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f5f6f8;border-radius:9px;padding:10px;font-size:12px;overflow:auto}
+  .chart-wrap{border:1px solid var(--border);border-radius:12px;padding:10px}
+  canvas{width:100%;height:250px;display:block}
+  .legend{font-size:12px;color:var(--muted);margin-top:6px}
+  .note{font-size:12px;color:var(--muted);line-height:1.55}
+  .badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#eef2ff;color:#2947ad;font-size:11px;font-weight:800}
+  .table{width:100%;border-collapse:collapse;font-size:13px}
+  .table th,.table td{text-align:left;border-bottom:1px solid var(--border);padding:9px}
+  .table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.03em}
+  .footer{color:var(--muted);font-size:11px;text-align:center;padding:8px 0 20px}
+  @media(max-width:900px){
+    .explain-grid,.poly-grid,.rank-grid{grid-template-columns:1fr}
+    .controls{grid-template-columns:repeat(3,1fr)}
+    .metrics{grid-template-columns:repeat(2,1fr)}
+    .grid2,.stream-grid,.result{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){
+    .wrap{padding:14px}
+    .controls{grid-template-columns:1fr 1fr}
+    .metrics{grid-template-columns:1fr 1fr}
+    .bit{width:16px;height:22px;font-size:10px}
+  }
+
+  .explain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .explain-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fbfcff}
+  .explain-title{font-size:14px;font-weight:850;margin-bottom:8px}
+  .poly-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .poly-card{border:1px solid var(--border);border-radius:12px;padding:15px;background:#fbfcff}
+  .poly-title{font-size:21px;font-weight:850;margin-bottom:8px}
+  .poly-equation{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;font-weight:750;line-height:1.5}
+  .poly-taps{margin-top:8px;font-size:12px;font-weight:800;color:#2947ad}
+  .poly-desc{margin-top:8px;font-size:12px;color:var(--muted);line-height:1.45}
+  .rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .rank-head{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+  .rank-head h3{margin:8px 0 0;font-size:16px}
+  .winner-note{font-size:11px;color:var(--good);text-align:right}
+  .table-scroll{overflow-x:auto}
+  .ranking-table{font-size:12px}
+  .ranking-table th,.ranking-table td{padding:8px 7px;white-space:nowrap}
+  .ranking-table tr.winner{background:#eef2ff}
+  .ranking-table tr.winner td{font-weight:800}
+  .rank-select-note{margin-top:10px;font-size:12px;color:var(--muted);line-height:1.5}
+  .rank-pill{display:inline-block;border-radius:999px;padding:4px 8px;margin-right:5px;background:#f0f2f6;border:1px solid var(--border);font-size:11px;font-weight:800}
+  .rank-pill.winner{background:#eef2ff;color:#2947ad;border-color:#cfd7ff}
+
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <h1>Stochastic Multiplier Simulator</h1>
+  <div class="subtitle">8-bit LFSR-based stochastic number generator → AND multiplier → decoded result and error analysis</div>
+
+  <div class="card">
+    <div class="section-title">1. Select inputs and SNG configuration</div>
+    <div class="controls">
+      <div>
+        <label for="L">STOCHASTIC STREAM LENGTH</label>
+        <select id="L"><option value="16">16</option><option value="32" selected>32</option></select>
+      </div>
+      <div>
+        <label for="rankPair">RANKED SNG PAIR</label>
+        <select id="rankPair">
+          <option value="1" selected>Rank #1 — L=32 Winner</option>
+          <option value="2">Rank #2</option>
+          <option value="3">Rank #3</option>
+          <option value="4">Rank #4</option>
+          <option value="5">Rank #5</option>
+          <option value="6">Rank #6</option>
+          <option value="7">Rank #7</option>
+          <option value="8">Rank #8</option>
+          <option value="9">Rank #9</option>
+          <option value="10">Rank #10</option>
+        </select>
+      </div>
+      <div>
+        <label for="A">INPUT A (0–255)</label>
+        <input id="A" type="number" min="0" max="255" value="170">
+      </div>
+      <div>
+        <label for="B">INPUT B (0–255)</label>
+        <input id="B" type="number" min="0" max="255" value="150">
+      </div>
+      <div>
+        <label for="archA">SNG A / LFSR</label>
+        <select id="archA"><option value="P1">P1</option><option value="P2">P2</option><option value="P3">P3</option></select>
+      </div>
+      <div>
+        <label for="seedA">SEED A (1–255)</label>
+        <input id="seedA" type="number" min="1" max="255" value="198">
+      </div>
+      <div>
+        <label for="archB">SNG B / LFSR</label>
+        <select id="archB"><option value="P1">P1</option><option value="P2" selected>P2</option><option value="P3">P3</option></select>
+      </div>
+      <div>
+        <label for="seedB">SEED B (1–255)</label>
+        <input id="seedB" type="number" min="1" max="255" value="86">
+      </div>
+    </div>
+    <div class="actions">
+      <button id="simulate">Run Simulation</button>
+      <div class="preset">
+        <button type="button" id="preset16">Load L=16 Winner</button>
+        <button type="button" id="preset32">Load L=32 Winner</button>
+      </div>
+    </div>
+    <div class="rank-select-note">
+      <strong>Ranked-pair mode:</strong> choose L=16 or L=32 and then select a rank.
+      The simulator automatically loads the corresponding ranked SNG pair below.
+      Ranking is based on exhaustive <strong>Multiplication MAE</strong> over the evaluated candidate pool.
+    </div>
+    <div class="note" style="margin-top:12px">
+      P1 taps = [7,5,4,3] · P2 taps = [7,5,4,1] · P3 taps = [7,6,1,0].
+      The simulator uses the same Fibonacci-style LFSR convention as the notebook: record current state, shift left, insert XOR feedback into bit 0, and generate a stochastic 1 when <code>state &lt; input</code>.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">2. Generated stochastic bitstreams</div>
+    <div class="stream-grid">
+      <div class="stream-card">
+        <div class="stream-head"><div class="stream-name">Stream A</div><div class="density" id="densityA">—</div></div>
+        <div class="bits" id="bitsA"></div>
+      </div>
+      <div class="stream-card">
+        <div class="stream-head"><div class="stream-name">Stream B</div><div class="density" id="densityB">—</div></div>
+        <div class="bits" id="bitsB"></div>
+      </div>
+      <div class="stream-card" style="grid-column:1/-1">
+        <div class="stream-head"><div class="stream-name">AND Output Stream</div><div class="density" id="densityOut">—</div></div>
+        <div class="bits" id="bitsOut"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">3. Numerical result and error metrics</div>
+    <div class="result">
+      <div class="hero">
+        <div class="small">IDEAL INTEGER PRODUCT</div>
+        <div class="big" id="idealInt">—</div>
+        <div class="small">A × B</div>
+      </div>
+      <div class="hero">
+        <div class="small">STOCHASTIC DECODED PRODUCT</div>
+        <div class="big" id="stochInt">—</div>
+        <div class="small">pAND × 255²</div>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+    <div class="metrics">
+      <div class="metric"><div class="k">A REPRESENTATION ERROR</div><div class="v" id="repA">—</div><div class="s">|pA − A/255|</div></div>
+      <div class="metric"><div class="k">B REPRESENTATION ERROR</div><div class="v" id="repB">—</div><div class="s">|pB − B/255|</div></div>
+      <div class="metric"><div class="k">DEPENDENCE ERROR</div><div class="v" id="dep">—</div><div class="s">pAND − pA·pB</div></div>
+      <div class="metric"><div class="k">NORMALIZED MULTIPLICATION ERROR</div><div class="v" id="mult">—</div><div class="s">pAND − ideal normalized product</div></div>
+    </div>
+    <div style="height:10px"></div>
+    <div class="metrics">
+      <div class="metric"><div class="k">RELATIVE MULTIPLICATION ERROR</div><div class="v" id="relMult">—</div><div class="s">|PSC − Pactual| / |Pactual| × 100</div></div>
+      <div class="metric"><div class="k">SIGNED RELATIVE ERROR</div><div class="v" id="signedRelMult">—</div><div class="s">(PSC − Pactual) / Pactual × 100</div></div>
+      <div class="metric"><div class="k">ABSOLUTE PRODUCT ERROR</div><div class="v" id="absIntErr">—</div><div class="s">|PSC − Pactual|</div></div>
+      <div class="metric"><div class="k">PRODUCT ERROR IN INTEGER SCALE</div><div class="v" id="intErr">—</div><div class="s">PSC − Pactual</div></div>
+      <div class="metric"><div class="k">OUTPUT 1-DENSITY</div><div class="v" id="pout">—</div><div class="s">pAND × 100%</div></div>
+      <div class="metric"><div class="k">STREAM LENGTH</div><div class="v" id="lenMetric">—</div><div class="s">clock cycles</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">4. What the error metrics mean</div>
+    <div class="explain-grid">
+      <div class="explain-card">
+        <div class="explain-title">Normalized multiplication error</div>
+        <div class="formula">e_norm = pAND − (A/255)(B/255)</div>
+        <div class="note">This is the stochastic-computing error used in the exhaustive pair search. Its absolute value is measured relative to the normalized [0,1] representation.</div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-title">Actual product error</div>
+        <div class="formula">e_rel = |PSC − Pactual| / |Pactual| × 100%</div>
+        <div class="note">This is the conventional percentage error of the decoded integer product. It is the metric you would normally quote when comparing the final numerical result.</div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-title">Why they are connected</div>
+        <div class="formula">PSC = pAND × 255² &nbsp;&nbsp; Pactual = A×B</div>
+        <div class="note">Because pideal = (A/255)(B/255) = (A×B)/255², the signed integer product error is exactly e_norm × 255².</div>
+      </div>
+      <div class="explain-card">
+        <div class="explain-title">Important distinction</div>
+        <div class="formula">e_norm ≠ relative error</div>
+        <div class="note">Normalized error is an absolute error on the normalized scale. Relative percentage error divides by the particular actual product, so it can become very large for small products and is undefined when A×B = 0.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="section-title">5. Representation quality</div>
+      <div class="chart-wrap"><canvas id="repChart" width="700" height="250"></canvas></div>
+      <div class="legend">Bars compare intended normalized values with measured stochastic 1-density.</div>
+    </div>
+    <div class="card">
+      <div class="section-title">6. Error decomposition</div>
+      <div class="chart-wrap"><canvas id="errChart" width="700" height="250"></canvas></div>
+      <div class="legend">Signed normalized errors. Normalized multiplication error = dependence error + representation-product error.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">7. Bitstream density over time</div>
+    <div class="chart-wrap"><canvas id="cumChart" width="1000" height="280"></canvas></div>
+    <div class="legend">Cumulative 1-density after each clock cycle. The dashed target lines are A/255 and B/255; output target is (A/255)(B/255).</div>
+  </div>
+
+
+  <div class="card">
+    <div class="section-title">8. LFSR polynomial definitions</div>
+    <div class="note" style="margin-bottom:12px">
+      All three configurations are 8-bit maximal-length Fibonacci LFSRs. A polynomial
+      label (P1/P2/P3) identifies the feedback-tap set; a seed identifies the initial
+      non-zero LFSR state. Each configuration has a 255-state period.
+    </div>
+    <div class="poly-grid">
+      <div class="poly-card">
+        <div class="poly-title">P1</div>
+        <div class="poly-equation">Feedback = s₇ ⊕ s₅ ⊕ s₄ ⊕ s₃</div>
+        <div class="poly-taps">Taps: [7, 5, 4, 3]</div>
+        <div class="poly-desc">The feedback bit is the XOR of state bits 7, 5, 4 and 3.</div>
+      </div>
+      <div class="poly-card">
+        <div class="poly-title">P2</div>
+        <div class="poly-equation">Feedback = s₇ ⊕ s₅ ⊕ s₄ ⊕ s₁</div>
+        <div class="poly-taps">Taps: [7, 5, 4, 1]</div>
+        <div class="poly-desc">The feedback bit is the XOR of state bits 7, 5, 4 and 1.</div>
+      </div>
+      <div class="poly-card">
+        <div class="poly-title">P3</div>
+        <div class="poly-equation">Feedback = s₇ ⊕ s₆ ⊕ s₁ ⊕ s₀</div>
+        <div class="poly-taps">Taps: [7, 6, 1, 0]</div>
+        <div class="poly-desc">The feedback bit is the XOR of state bits 7, 6, 1 and 0.</div>
+      </div>
+    </div>
+    <div class="formula" style="margin-top:12px">
+      LFSR notation: Pk–seed means “polynomial Pk with that seed”. Example: P2–198 = P2 taps [7,5,4,1], initialized with state 198.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">9. Exhaustive top-10 multiplier pairs</div>
+    <div class="note" style="margin-bottom:12px">
+      Ranking criterion: <strong>Multiplication MAE</strong>, averaged over the complete 256 × 256 input space.
+      Lower is better. The search exhaustively evaluated the selected candidate pool; these are the best pairs within that evaluated pool.
+      Errors are percentages of normalized full scale.
+    </div>
+
+    <div class="rank-grid">
+      <div>
+        <div class="rank-head">
+          <div>
+            <span class="badge">L = 16</span>
+            <h3>Recorded top pairs</h3>
+          </div>
+          <div class="winner-note">Winner: <strong>P3–174 × P3–121</strong></div><div class="rank-select-note">7 ranks are preserved from the recorded exhaustive results; ranks 8–10 are not fabricated.</div>
+        </div>
+        <div class="table-scroll">
+          <table class="table ranking-table">
+            <thead><tr><th>#</th><th>Pair</th><th>MAE</th><th>RMSE</th><th>Max error</th><th>Bias</th></tr></thead>
+            <tbody id="rank16"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="rank-head">
+          <div>
+            <span class="badge">L = 32</span>
+            <h3>Top 10 pairs</h3>
+          </div>
+          <div class="winner-note">Winner: <strong>P2–198 × P2–86</strong></div>
+        </div>
+        <div class="table-scroll">
+          <table class="table ranking-table">
+            <thead><tr><th>#</th><th>Pair</th><th>MAE</th><th>RMSE</th><th>Max error</th><th>Bias</th></tr></thead>
+            <tbody id="rank32"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">10. Top-pair comparison</div>
+    <div class="chart-wrap"><canvas id="topPairsChart" width="1100" height="390"></canvas></div>
+    <div class="legend">
+      Lower MAE is better. The plot shows the recorded top-ranked pairs from the exhaustive candidate-pool evaluation,
+      with L=16 and L=32 separated for easier comparison.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">11. Exact configuration and calculation details</div>
+    <table class="table">
+      <thead><tr><th>Item</th><th>Value</th><th>Meaning</th></tr></thead>
+      <tbody id="details"></tbody>
+    </table>
+    <div style="height:10px"></div>
+    <div class="formula" id="formula">—</div>
+  </div>
+
+  <div class="footer">Standalone HTML simulator • Research results are based on the previously completed exhaustive candidate-pool evaluation • No internet connection or external libraries required.</div>
+</div>
+
+<script>
+(function(){
+  const TAPS = {
+    P1:[7,5,4,3],
+    P2:[7,5,4,1],
+    P3:[7,6,1,0]
+  };
+
+  const $ = id => document.getElementById(id);
+  const clamp = (v,lo,hi) => Math.min(hi,Math.max(lo,v));
+  const pct = x => (x*100).toFixed(4) + "%";
+  const signedPct = x => (x >= 0 ? "+" : "") + (x*100).toFixed(4) + "%";
+  const fmt = x => Number(x).toFixed(6);
+
+  function nextState(state, taps){
+    let feedback = 0;
+    for(const tap of taps) feedback ^= (state >> tap) & 1;
+    let next = (state << 1) & 255;
+    next |= feedback;
+    return next;
+  }
+
+  function lfsrStates(seed, taps, L){
+    let s = seed;
+    const arr = [];
+    for(let i=0;i<L;i++){
+      arr.push(s);
+      s = nextState(s,taps);
+    }
+    return arr;
+  }
+
+  function stochasticStream(input, states){
+    return states.map(s => s < input ? 1 : 0);
+  }
+
+  function mean(arr){
+    return arr.reduce((a,b)=>a+b,0)/arr.length;
+  }
+
+  function setClass(el, value){
+    el.classList.remove("good","bad","neutral");
+    el.classList.add(Math.abs(value) < 0.01 ? "good" : Math.abs(value) < 0.03 ? "neutral" : "bad");
+  }
+
+  function drawBarChart(canvas, labels, values, targets){
+    const ctx=canvas.getContext("2d"), w=canvas.width, h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const m={l:48,r:18,t:22,b:45}, pw=w-m.l-m.r, ph=h-m.t-m.b;
+    ctx.strokeStyle="#d8dde6"; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){
+      const y=m.t+ph*i/4;
+      ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();
+      ctx.fillStyle="#667085";ctx.font="11px system-ui";
+      ctx.fillText((100-(25*i)).toFixed(0)+"%",5,y+4);
+    }
+    const maxVal=Math.max(1,...values.map(v=>v*100),...targets.map(v=>v*100));
+    const scale=ph/Math.max(1,maxVal);
+    const groupW=pw/labels.length;
+    labels.forEach((lab,i)=>{
+      const bx=m.l+i*groupW+groupW*.16, bw=groupW*.25;
+      const vh=values[i]*100*scale;
+      ctx.fillStyle="#315efb"; ctx.fillRect(bx,h-m.b-vh,bw,vh);
+      const th=targets[i]*100*scale;
+      ctx.fillStyle="#7c3aed"; ctx.fillRect(bx+groupW*.31,h-m.b-th,bw,th);
+      ctx.fillStyle="#18202a";ctx.font="11px system-ui";ctx.textAlign="center";
+      ctx.fillText(lab,bx+groupW*.28,h-15);
+      ctx.textAlign="left";
+    });
+    ctx.fillStyle="#315efb";ctx.fillRect(w-180,12,10,10);
+    ctx.fillStyle="#18202a";ctx.fillText("Measured",w-165,21);
+    ctx.fillStyle="#7c3aed";ctx.fillRect(w-95,12,10,10);
+    ctx.fillStyle="#18202a";ctx.fillText("Ideal",w-80,21);
+  }
+
+  function drawErrorChart(canvas, vals){
+    const ctx=canvas.getContext("2d"), w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const m={l:55,r:20,t:28,b:50}, ph=h-m.t-m.b, pw=w-m.l-m.r;
+    const max=Math.max(5,...vals.map(v=>Math.abs(v)*100))*1.2;
+    const y0=m.t+ph/2, scale=(ph/2)/max;
+    ctx.strokeStyle="#d8dde6";ctx.beginPath();ctx.moveTo(m.l,y0);ctx.lineTo(w-m.r,y0);ctx.stroke();
+    ctx.fillStyle="#667085";ctx.font="11px system-ui";
+    ctx.fillText("+"+max.toFixed(1)+"%",5,m.t+4);ctx.fillText("0%",20,y0+4);ctx.fillText("-"+max.toFixed(1)+"%",2,h-m.b+4);
+    const names=["Rep. product","Dependence","Multiplication"];
+    const colors=["#315efb","#7c3aed","#b7791f"];
+    const gw=pw/3;
+    vals.forEach((v,i)=>{
+      const bh=Math.abs(v)*100*scale;
+      ctx.fillStyle=colors[i];
+      if(v>=0) ctx.fillRect(m.l+i*gw+gw*.25,y0-bh,gw*.5,bh);
+      else ctx.fillRect(m.l+i*gw+gw*.25,y0,gw*.5,bh);
+      ctx.fillStyle="#18202a";ctx.textAlign="center";ctx.font="11px system-ui";
+      ctx.fillText(names[i],m.l+i*gw+gw*.5,h-18);
+      ctx.fillText(signedPct(v),m.l+i*gw+gw*.5,v>=0?y0-bh-6:y0+bh+14);
+    });
+    ctx.textAlign="left";
+  }
+
+  function drawCumulative(canvas, a,b,out,targetA,targetB,targetO){
+    const ctx=canvas.getContext("2d"), w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const m={l:50,r:20,t:22,b:40}, pw=w-m.l-m.r, ph=h-m.t-m.b;
+    [0,.25,.5,.75,1].forEach(v=>{
+      const y=h-m.b-v*ph;
+      ctx.strokeStyle="#e1e5eb";ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();
+      ctx.fillStyle="#667085";ctx.font="11px system-ui";ctx.fillText((v*100).toFixed(0)+"%",8,y+4);
+    });
+    function line(arr, color){
+      ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();
+      arr.forEach((v,i)=>{const x=m.l+(i/(arr.length-1||1))*pw,y=h-m.b-v*ph;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+      ctx.stroke();
+    }
+    const ca=[],cb=[],co=[];let sa=0,sb=0,so=0;
+    for(let i=0;i<a.length;i++){sa+=a[i];sb+=b[i];so+=out[i];ca.push(sa/(i+1));cb.push(sb/(i+1));co.push(so/(i+1));}
+    line(ca,"#315efb");line(cb,"#7c3aed");line(co,"#16855b");
+    function target(v,color){const y=h-m.b-v*ph;ctx.strokeStyle=color;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.setLineDash([]);}
+    target(targetA,"#315efb");target(targetB,"#7c3aed");target(targetO,"#16855b");
+    ctx.fillStyle="#18202a";ctx.font="11px system-ui";
+    [["A","#315efb"],["B","#7c3aed"],["AND","#16855b"]].forEach((x,i)=>{ctx.fillStyle=x[1];ctx.fillRect(w-170+i*55,8,10,10);ctx.fillStyle="#18202a";ctx.fillText(x[0],w-155+i*55,17)});
+  }
+
+  function renderBits(id, arr, output){
+    const el=$(id); el.innerHTML="";
+    arr.forEach((b,i)=>{
+      const s=document.createElement("span");s.className="bit"+(b?" one":"")+(output?" out":"");s.textContent=b;
+      s.title=`Cycle ${i+1}: ${b}`;
+      el.appendChild(s);
+    });
+  }
+
+
+  /*
+   * Rank-wise exhaustive results used by the simulator.
+   *
+   * L=32: Top 10 are available from the completed exhaustive ranking.
+   * L=16: the previously recorded ranking contains Top 7 entries.
+   * We do NOT invent ranks 8–10 where their values were not preserved.
+   */
+  const TOP16 = [
+    ["P3–174 × P3–121",0.027447613,0.034733858,0.126356,0.000868],
+    ["P2–161 × P3–121",0.030099000,0.038055000,0.133555,-0.004637],
+    ["P1–47 × P3–215",0.030512000,0.038222000,0.123304,-0.005976],
+    ["P1–23 × P3–174",0.030976000,0.039020000,0.159193,-0.011065],
+    ["P1–95 × P3–174",0.031464000,0.040135000,0.150670,-0.008350],
+    ["P1–23 × P2–229",0.031594000,0.040261000,0.158953,-0.014522],
+    ["P2–161 × P3–174",0.032777000,0.041250000,0.148220,-0.010710]
+  ];
+
+  const TOP32 = [
+    ["P2–198 × P2–86",0.018915640,0.024183442,0.097141,-0.001496],
+    ["P1–191 × P1–163",0.019866000,0.026122000,0.108151,-0.002709],
+    ["P1–191 × P1–140",0.020190000,0.025683000,0.101324,-0.005108],
+    ["P1–191 × P2–172",0.020215000,0.025624000,0.097623,-0.004765],
+    ["P2–198 × P3–173",0.020752000,0.026903000,0.118668,0.008205],
+    ["P1–163 × P2–198",0.021471000,0.027193000,0.096405,-0.010383],
+    ["P1–191 × P3–14",0.021844000,0.028967000,0.131314,0.010161],
+    ["P1–163 × P3–14",0.022175000,0.028727000,0.108524,0.009962],
+    ["P2–172 × P2–198",0.022329000,0.028046000,0.098976,-0.006094],
+    ["P2–198 × P3–90",0.022638000,0.028910000,0.114337,-0.010912]
+  ];
+
+  function parseRankPair(pair){
+    const s = pair
+      .replace(/–/g,"-")
+      .replace(/—/g,"-")
+      .replace(/×/g,"x");
+
+    const parts = s.split(/\s*x\s*/);
+    const left = parts[0].trim();
+    const right = parts[1].trim();
+
+    const a = left.match(/(P[123])-(\d+)/);
+    const b = right.match(/(P[123])-(\d+)/);
+
+    return {
+      archA:a[1], seedA:Number(a[2]),
+      archB:b[1], seedB:Number(b[2])
+    };
+  }
+
+  function currentRankingArray(){
+    return Number($("L").value) === 16 ? TOP16 : TOP32;
+  }
+
+  function updateRankSelector(){
+    const rows = currentRankingArray();
+    const select = $("rankPair");
+    const current = Number(select.value);
+
+    select.innerHTML = "";
+
+    rows.forEach((r,i)=>{
+      const opt = document.createElement("option");
+      opt.value = String(i+1);
+      opt.textContent =
+        `Rank #${i+1} — ${r[0]} — MAE ${(r[1]*100).toFixed(4)}%`;
+      select.appendChild(opt);
+    });
+
+    const valid = Math.min(current, rows.length);
+    select.value = String(valid);
+
+    applyRankedPair();
+  }
+
+  function applyRankedPair(){
+    const rows = currentRankingArray();
+    const rank = Number($("rankPair").value);
+    const row = rows[rank-1];
+
+    if(!row) return;
+
+    const p = parseRankPair(row[0]);
+
+    $("archA").value = p.archA;
+    $("seedA").value = p.seedA;
+    $("archB").value = p.archB;
+    $("seedB").value = p.seedB;
+
+    // Highlight which rank is currently active in the page.
+    $("rankPair").title =
+      `Rank #${rank}: ${row[0]} | Multiplication MAE ${(row[1]*100).toFixed(4)}%`;
+  }
+
+  function fillRanking(id, rows){
+    $(id).innerHTML=rows.map((r,i)=>{
+      const winner=i===0 ? " class=\"winner\"" : "";
+      return `<tr${winner}><td>${i+1}</td><td>${r[0]}</td><td>${pct(r[1])}</td><td>${pct(r[2])}</td><td>${pct(r[3])}</td><td>${signedPct(r[4])}</td></tr>`;
+    }).join("");
+  }
+
+  function drawTopPairsChart(canvas, rows16, rows32){
+    const ctx=canvas.getContext("2d"), w=canvas.width, h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const all=[...rows16.map(r=>[r[0],r[1]*100,"L=16"]),...rows32.map(r=>[r[0],r[1]*100,"L=32"])];
+    const m={l:245,r:30,t:38,b:28}, pw=w-m.l-m.r, ph=h-m.t-m.b;
+    const max=Math.max(...all.map(r=>r[1]))*1.12;
+    const rowH=ph/all.length;
+    ctx.strokeStyle="#e1e5eb";ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){
+      const x=m.l+pw*i/4;
+      ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,h-m.b);ctx.stroke();
+      ctx.fillStyle="#667085";ctx.font="11px system-ui";ctx.textAlign="center";
+      ctx.fillText((max*i/4).toFixed(1)+"%",x,h-8);
+    }
+    all.forEach((r,i)=>{
+      const y=m.t+i*rowH+rowH*.18, bh=rowH*.64, bw=(r[1]/max)*pw;
+      ctx.fillStyle=r[2]==="L=16"?"#315efb":"#7c3aed";
+      ctx.fillRect(m.l,y,bw,bh);
+      ctx.fillStyle="#18202a";ctx.font="11px system-ui";ctx.textAlign="right";
+      ctx.fillText(`${r[2]}  ${r[0]}`,m.l-9,y+bh*.68);
+      ctx.textAlign="left";ctx.font="10px system-ui";
+      ctx.fillText(r[1].toFixed(3)+"%",m.l+bw+6,y+bh*.68);
+    });
+    ctx.fillStyle="#315efb";ctx.fillRect(w-175,11,10,10);
+    ctx.fillStyle="#18202a";ctx.font="11px system-ui";ctx.fillText("L=16",w-160,20);
+    ctx.fillStyle="#7c3aed";ctx.fillRect(w-115,11,10,10);
+    ctx.fillStyle="#18202a";ctx.fillText("L=32",w-100,20);
+    ctx.textAlign="left";
+  }
+
+  function simulate(){
+    let L=Number($("L").value);
+    let A=clamp(Number($("A").value)||0,0,255);
+    let B=clamp(Number($("B").value)||0,0,255);
+    let archA=$("archA").value, archB=$("archB").value;
+    let seedA=clamp(Number($("seedA").value)||1,1,255);
+    let seedB=clamp(Number($("seedB").value)||1,1,255);
+    $("A").value=A;$("B").value=B;$("seedA").value=seedA;$("seedB").value=seedB;
+
+    const statesA=lfsrStates(seedA,TAPS[archA],L);
+    const statesB=lfsrStates(seedB,TAPS[archB],L);
+    const streamA=stochasticStream(A,statesA);
+    const streamB=stochasticStream(B,statesB);
+    const out=streamA.map((v,i)=>v & streamB[i]);
+
+    const pA=mean(streamA), pB=mean(streamB), pOut=mean(out);
+    const x=A/255, y=B/255, ideal=x*y;
+    const repA=pA-x, repB=pB-y;
+    const repProduct=pA*pB-ideal;
+    const dep=pOut-pA*pB;
+    const mult=pOut-ideal;
+    const stochInt=pOut*255*255, idealInt=A*B, intErr=stochInt-idealInt;
+    const absIntErr=Math.abs(intErr);
+    const relMult=(idealInt===0)?null:(absIntErr/Math.abs(idealInt));
+    const signedRelMult=(idealInt===0)?null:(intErr/idealInt);
+
+    renderBits("bitsA",streamA,false);renderBits("bitsB",streamB,false);renderBits("bitsOut",out,true);
+    $("densityA").textContent=`1-density = ${pct(pA)} · ideal = ${pct(x)}`;
+    $("densityB").textContent=`1-density = ${pct(pB)} · ideal = ${pct(y)}`;
+    $("densityOut").textContent=`1-density = ${pct(pOut)} · ideal product = ${pct(ideal)}`;
+
+    $("idealInt").textContent=idealInt.toFixed(3);
+    $("stochInt").textContent=stochInt.toFixed(3);
+    $("repA").textContent=pct(Math.abs(repA));setClass($("repA"),repA);
+    $("repB").textContent=pct(Math.abs(repB));setClass($("repB"),repB);
+    $("dep").textContent=signedPct(dep);setClass($("dep"),dep);
+    $("mult").textContent=signedPct(mult);setClass($("mult"),mult);
+    $("relMult").textContent=relMult===null?"N/A":pct(relMult);setClass($("relMult"),relMult===null?0:relMult);
+    $("signedRelMult").textContent=signedRelMult===null?"N/A":signedPct(signedRelMult);setClass($("signedRelMult"),signedRelMult===null?0:signedRelMult);
+    $("absIntErr").textContent=absIntErr.toFixed(3);setClass($("absIntErr"),absIntErr/Math.max(1,idealInt));
+    $("intErr").textContent=(intErr>=0?"+":"")+intErr.toFixed(3);
+    $("pout").textContent=pct(pOut);
+    $("lenMetric").textContent=L;
+
+    drawBarChart($("repChart"),["A","B","Product"],[pA,pB,pOut],[x,y,ideal]);
+    drawErrorChart($("errChart"),[repProduct,dep,mult]);
+    drawCumulative($("cumChart"),streamA,streamB,out,x,y,ideal);
+
+    const rows=[
+      ["Input A",A,"8-bit unsigned operand"],
+      ["Input B",B,"8-bit unsigned operand"],
+      ["Stream length",L,"Number of stochastic clock cycles"],
+      ["SNG A",`${archA}, seed ${seedA}`,`taps = [${TAPS[archA].join(", ")}]`],
+      ["SNG B",`${archB}, seed ${seedB}`,`taps = [${TAPS[archB].join(", ")}]`],
+      ["Measured pA",pA.toFixed(6),`ideal A/255 = ${x.toFixed(6)}`],
+      ["Measured pB",pB.toFixed(6),`ideal B/255 = ${y.toFixed(6)}`],
+      ["Measured pAND",pOut.toFixed(6),`ideal xy = ${ideal.toFixed(6)}`],
+      ["Normalized multiplication error",signedPct(mult),"pAND − ideal normalized product"],
+      ["Decoded stochastic product",stochInt.toFixed(3),"pAND × 255²"],
+      ["Absolute product error",absIntErr.toFixed(3),"|decoded stochastic product − actual product|"],
+      ["Relative multiplication error",relMult===null?"N/A":pct(relMult),"undefined when actual product is zero"],
+      ["Signed relative multiplication error",signedRelMult===null?"N/A":signedPct(signedRelMult),"positive = overestimation; negative = underestimation"]
+    ];
+    $("details").innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td><strong>${r[1]}</strong></td><td>${r[2]}</td></tr>`).join("");
+
+    $("formula").textContent =
+      `pA=${pA.toFixed(6)}, pB=${pB.toFixed(6)}, pAND=${pOut.toFixed(6)} | `+
+      `Dependence error = pAND − pA·pB = ${dep.toFixed(6)} (${signedPct(dep)}) | `+
+      `Representation-product error = pA·pB − xy = ${repProduct.toFixed(6)} (${signedPct(repProduct)}) | `+
+      `Normalized multiplication error = pAND − xy = ${mult.toFixed(6)} (${signedPct(mult)}) | `+
+      `Relative product error = ${relMult===null?"N/A (actual product = 0)":pct(relMult)} | `+
+      `Signed relative product error = ${signedRelMult===null?"N/A (actual product = 0)":signedPct(signedRelMult)}`;
+
+    fillRanking("rank16", TOP16);
+    fillRanking("rank32", TOP32);
+    drawTopPairsChart($("topPairsChart"), TOP16, TOP32);
+
+    window.currentSimulation={L,A,B,archA,archB,seedA,seedB,statesA,statesB,streamA,streamB,out,pA,pB,pOut,x,y,ideal,repA,repB,repProduct,dep,mult,stochInt,idealInt,intErr,absIntErr,relMult,signedRelMult};
+  }
+
+  $("L").addEventListener("change", updateRankSelector);
+  $("rankPair").addEventListener("change", ()=>{
+    applyRankedPair();
+    simulate();
+  });
+
+  $("simulate").addEventListener("click",simulate);
+  $("preset16").addEventListener("click",()=>{
+    $("L").value=16;$("A").value=170;$("B").value=150;
+    $("archA").value="P3";$("seedA").value=174;
+    $("archB").value="P3";$("seedB").value=121;
+    updateRankSelector();
+    $("rankPair").value="1";
+    simulate();
+  });
+  $("preset32").addEventListener("click",()=>{
+    $("L").value=32;$("A").value=170;$("B").value=150;
+    $("archA").value="P2";$("seedA").value=198;
+    $("archB").value="P2";$("seedB").value=86;
+    updateRankSelector();
+    $("rankPair").value="1";
+    simulate();
+  });
+
+  updateRankSelector();
+  $("rankPair").value = "1";
+  applyRankedPair();
+  simulate();
+})();
+</script>
+</body>
+</html>
