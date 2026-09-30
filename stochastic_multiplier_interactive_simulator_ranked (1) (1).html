@@ -97,14 +97,18 @@
 <body>
 <div class="wrap" id="app">
   <h1>Stochastic Multiplier Simulator</h1>
-  <div class="subtitle">8-bit LFSR-based stochastic number generator → AND multiplier → decoded result and error analysis</div>
+  <div class="subtitle">8-bit LFSR-based stochastic number generator → selectable bitwise operation → density and error analysis</div>
 
   <div class="card">
     <div class="section-title">1. Select inputs and SNG configuration</div>
     <div class="controls">
       <div>
         <label for="L">STOCHASTIC STREAM LENGTH</label>
-        <select id="L"><option value="16">16</option><option value="32" selected>32</option></select>
+        <select id="L"><option value="16">16</option><option value="32" selected>32</option><option value="64">64</option><option value="128">128</option><option value="256">256</option><option value="512">512</option><option value="1024">1024</option></select>
+      </div>
+      <div>
+        <label for="operation">BITSTREAM OPERATION</label>
+        <select id="operation"><option value="and" selected>Multiplication (AND)</option><option value="xor">Bitwise XOR (XOR)</option></select>
       </div>
       <div>
         <label for="rankPair">RANKED SNG PAIR</label>
@@ -160,7 +164,7 @@
     </div>
     <div class="note" style="margin-top:12px">
       P1 taps = [7,5,4,3] · P2 taps = [7,5,4,1] · P3 taps = [7,6,1,0].
-      The simulator uses the same Fibonacci-style LFSR convention as the notebook: record current state, shift left, insert XOR feedback into bit 0, and generate a stochastic 1 when <code>state &lt; input</code>.
+      The simulator uses the same Fibonacci-style LFSR convention as the notebook: record current state, shift left, insert XOR feedback into bit 0, and generate a stochastic 1 when <code>state &lt; input</code>. Since the LFSR visits nonzero states 1…255, this comparator produces input−1 ones for inputs 1…255 (and 0 for input 0); the historical ranked-pair metrics below use this convention. The simulator shows the ideal input target separately so this representation offset remains visible.
     </div>
   </div>
 
@@ -176,7 +180,7 @@
         <div class="bits" id="bitsB"></div>
       </div>
       <div class="stream-card" style="grid-column:1/-1">
-        <div class="stream-head"><div class="stream-name">AND Output Stream</div><div class="density" id="densityOut">—</div></div>
+        <div class="stream-head"><div class="stream-name" id="outputName">AND Output Stream</div><div class="density" id="densityOut">—</div></div>
         <div class="bits" id="bitsOut"></div>
       </div>
     </div>
@@ -186,37 +190,37 @@
     <div class="section-title">3. Numerical result and error metrics</div>
     <div class="result">
       <div class="hero">
-        <div class="small">IDEAL INTEGER PRODUCT</div>
+        <div class="small" id="idealLabel">IDEAL INTEGER PRODUCT</div>
         <div class="big" id="idealInt">—</div>
-        <div class="small">A × B</div>
+        <div class="small" id="idealSubLabel">A × B</div>
       </div>
       <div class="hero">
-        <div class="small">STOCHASTIC DECODED PRODUCT</div>
+        <div class="small" id="decodedLabel">STOCHASTIC DECODED PRODUCT</div>
         <div class="big" id="stochInt">—</div>
-        <div class="small">pAND × 255²</div>
+        <div class="small" id="decodedSubLabel">pAND × 255²</div>
       </div>
     </div>
     <div style="height:12px"></div>
     <div class="metrics">
       <div class="metric"><div class="k">A REPRESENTATION ERROR</div><div class="v" id="repA">—</div><div class="s">|pA − A/255|</div></div>
       <div class="metric"><div class="k">B REPRESENTATION ERROR</div><div class="v" id="repB">—</div><div class="s">|pB − B/255|</div></div>
-      <div class="metric"><div class="k">DEPENDENCE ERROR</div><div class="v" id="dep">—</div><div class="s">pAND − pA·pB</div></div>
-      <div class="metric"><div class="k">NORMALIZED MULTIPLICATION ERROR</div><div class="v" id="mult">—</div><div class="s">pAND − ideal normalized product</div></div>
+      <div class="metric"><div class="k" id="depLabel">DEPENDENCE ERROR</div><div class="v" id="dep">—</div><div class="s" id="depSub">pAND − pA·pB</div></div>
+      <div class="metric"><div class="k" id="opErrorLabel">NORMALIZED MULTIPLICATION ERROR</div><div class="v" id="mult">—</div><div class="s" id="opErrorSub">pAND − ideal normalized product</div></div>
     </div>
     <div style="height:10px"></div>
     <div class="metrics">
-      <div class="metric"><div class="k">RELATIVE MULTIPLICATION ERROR</div><div class="v" id="relMult">—</div><div class="s">|PSC − Pactual| / |Pactual| × 100</div></div>
-      <div class="metric"><div class="k">SIGNED RELATIVE ERROR</div><div class="v" id="signedRelMult">—</div><div class="s">(PSC − Pactual) / Pactual × 100</div></div>
-      <div class="metric"><div class="k">ABSOLUTE PRODUCT ERROR</div><div class="v" id="absIntErr">—</div><div class="s">|PSC − Pactual|</div></div>
-      <div class="metric"><div class="k">PRODUCT ERROR IN INTEGER SCALE</div><div class="v" id="intErr">—</div><div class="s">PSC − Pactual</div></div>
-      <div class="metric"><div class="k">OUTPUT 1-DENSITY</div><div class="v" id="pout">—</div><div class="s">pAND × 100%</div></div>
+      <div class="metric"><div class="k" id="relativeLabel">RELATIVE MULTIPLICATION ERROR</div><div class="v" id="relMult">—</div><div class="s" id="relativeSub">|PSC − Pactual| / |Pactual| × 100</div></div>
+      <div class="metric"><div class="k" id="signedRelativeLabel">SIGNED RELATIVE ERROR</div><div class="v" id="signedRelMult">—</div><div class="s" id="signedRelativeSub">(PSC − Pactual) / Pactual × 100</div></div>
+      <div class="metric"><div class="k" id="absErrorLabel">ABSOLUTE PRODUCT ERROR</div><div class="v" id="absIntErr">—</div><div class="s" id="absErrorSub">|PSC − Pactual|</div></div>
+      <div class="metric"><div class="k" id="intErrorLabel">PRODUCT ERROR IN INTEGER SCALE</div><div class="v" id="intErr">—</div><div class="s" id="intErrorSub">PSC − Pactual</div></div>
+      <div class="metric"><div class="k">OUTPUT 1-DENSITY</div><div class="v" id="pout">—</div><div class="s" id="poutSub">pAND × 100%</div></div>
       <div class="metric"><div class="k">STREAM LENGTH</div><div class="v" id="lenMetric">—</div><div class="s">clock cycles</div></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="section-title">4. What the error metrics mean</div>
-    <div class="explain-grid">
+    <div class="section-title">4. What the operation and error metrics mean</div>
+    <div class="explain-grid" id="explainGrid">
       <div class="explain-card">
         <div class="explain-title">Normalized multiplication error</div>
         <div class="formula">e_norm = pAND − (A/255)(B/255)</div>
@@ -249,14 +253,14 @@
     <div class="card">
       <div class="section-title">6. Error decomposition</div>
       <div class="chart-wrap"><canvas id="errChart" width="700" height="250"></canvas></div>
-      <div class="legend">Signed normalized errors. Normalized multiplication error = dependence error + representation-product error.</div>
+      <div class="legend" id="errorLegend">Signed normalized errors. Normalized multiplication error = dependence error + representation-product error.</div>
     </div>
   </div>
 
   <div class="card">
     <div class="section-title">7. Bitstream density over time</div>
     <div class="chart-wrap"><canvas id="cumChart" width="1000" height="280"></canvas></div>
-    <div class="legend">Cumulative 1-density after each clock cycle. The dashed target lines are A/255 and B/255; output target is (A/255)(B/255).</div>
+    <div class="legend" id="cumLegend">Cumulative 1-density after each clock cycle. The dashed target lines are A/255 and B/255; output target is (A/255)(B/255).</div>
   </div>
 
 
@@ -297,7 +301,7 @@
     <div class="note" style="margin-bottom:12px">
       Ranking criterion: <strong>Multiplication MAE</strong>, averaged over the complete 256 × 256 input space.
       Lower is better. The search exhaustively evaluated the selected candidate pool; these are the best pairs within that evaluated pool.
-      Errors are percentages of normalized full scale.
+      Errors are percentages of normalized full scale. Rankings were recorded only for L=16 and L=32 under the comparator convention described above; they are historical multiplication results and are not recalculated for XOR or longer lengths.
     </div>
 
     <div class="rank-grid">
@@ -432,7 +436,7 @@
     ctx.fillStyle="#18202a";ctx.fillText("Ideal",w-80,21);
   }
 
-  function drawErrorChart(canvas, vals){
+  function drawErrorChart(canvas, vals, operation){
     const ctx=canvas.getContext("2d"), w=canvas.width,h=canvas.height;
     ctx.clearRect(0,0,w,h);
     const m={l:55,r:20,t:28,b:50}, ph=h-m.t-m.b, pw=w-m.l-m.r;
@@ -441,7 +445,7 @@
     ctx.strokeStyle="#d8dde6";ctx.beginPath();ctx.moveTo(m.l,y0);ctx.lineTo(w-m.r,y0);ctx.stroke();
     ctx.fillStyle="#667085";ctx.font="11px system-ui";
     ctx.fillText("+"+max.toFixed(1)+"%",5,m.t+4);ctx.fillText("0%",20,y0+4);ctx.fillText("-"+max.toFixed(1)+"%",2,h-m.b+4);
-    const names=["Rep. product","Dependence","Multiplication"];
+    const names=operation==="and"?["Rep. product","Dependence","Multiplication"]:["Rep. XOR","Dependence","XOR output"];
     const colors=["#315efb","#7c3aed","#b7791f"];
     const gw=pw/3;
     vals.forEach((v,i)=>{
@@ -456,7 +460,7 @@
     ctx.textAlign="left";
   }
 
-  function drawCumulative(canvas, a,b,out,targetA,targetB,targetO){
+  function drawCumulative(canvas, a,b,out,targetA,targetB,targetO, operation){
     const ctx=canvas.getContext("2d"), w=canvas.width,h=canvas.height;
     ctx.clearRect(0,0,w,h);
     const m={l:50,r:20,t:22,b:40}, pw=w-m.l-m.r, ph=h-m.t-m.b;
@@ -476,7 +480,7 @@
     function target(v,color){const y=h-m.b-v*ph;ctx.strokeStyle=color;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke();ctx.setLineDash([]);}
     target(targetA,"#315efb");target(targetB,"#7c3aed");target(targetO,"#16855b");
     ctx.fillStyle="#18202a";ctx.font="11px system-ui";
-    [["A","#315efb"],["B","#7c3aed"],["AND","#16855b"]].forEach((x,i)=>{ctx.fillStyle=x[1];ctx.fillRect(w-170+i*55,8,10,10);ctx.fillStyle="#18202a";ctx.fillText(x[0],w-155+i*55,17)});
+    [["A","#315efb"],["B","#7c3aed"],[operation.toUpperCase(),"#16855b"]].forEach((x,i)=>{ctx.fillStyle=x[1];ctx.fillRect(w-170+i*55,8,10,10);ctx.fillStyle="#18202a";ctx.fillText(x[0],w-155+i*55,17)});
   }
 
   function renderBits(id, arr, output){
@@ -543,8 +547,15 @@
   }
 
   function updateRankSelector(){
-    const rows = currentRankingArray();
+    const L=Number($("L").value);
     const select = $("rankPair");
+    if(L!==16 && L!==32){
+      select.innerHTML="<option value=\"\">No recorded ranking for this length</option>";
+      select.disabled=true;
+      return;
+    }
+    select.disabled=false;
+    const rows = currentRankingArray();
     const current = Number(select.value);
 
     select.innerHTML = "";
@@ -621,6 +632,7 @@
 
   function simulate(){
     let L=Number($("L").value);
+    const operation=$("operation").value;
     let A=clamp(Number($("A").value)||0,0,255);
     let B=clamp(Number($("B").value)||0,0,255);
     let archA=$("archA").value, archB=$("archB").value;
@@ -632,40 +644,74 @@
     const statesB=lfsrStates(seedB,TAPS[archB],L);
     const streamA=stochasticStream(A,statesA);
     const streamB=stochasticStream(B,statesB);
-    const out=streamA.map((v,i)=>v & streamB[i]);
+    const out=streamA.map((v,i)=>operation==="and"?(v & streamB[i]):(v ^ streamB[i]));
 
     const pA=mean(streamA), pB=mean(streamB), pOut=mean(out);
-    const x=A/255, y=B/255, ideal=x*y;
+    const pAB=mean(streamA.map((v,i)=>v & streamB[i]));
+    const x=A/255, y=B/255;
+    const ideal=operation==="and"?x*y:(x+y-2*x*y);
     const repA=pA-x, repB=pB-y;
-    const repProduct=pA*pB-ideal;
-    const dep=pOut-pA*pB;
+    const independentOut=operation==="and"?pA*pB:(pA+pB-2*pA*pB);
+    const repProduct=independentOut-ideal;
+    const dep=pOut-independentOut;
     const mult=pOut-ideal;
-    const stochInt=pOut*255*255, idealInt=A*B, intErr=stochInt-idealInt;
+    const stochInt=operation==="and"?pOut*255*255:NaN;
+    const idealInt=A*B;
+    const intErr=operation==="and"?stochInt-idealInt:NaN;
     const absIntErr=Math.abs(intErr);
-    const relMult=(idealInt===0)?null:(absIntErr/Math.abs(idealInt));
-    const signedRelMult=(idealInt===0)?null:(intErr/idealInt);
+    const relMult=operation!=="and"||idealInt===0?null:(absIntErr/Math.abs(idealInt));
+    const signedRelMult=operation!=="and"||idealInt===0?null:(intErr/idealInt);
 
     renderBits("bitsA",streamA,false);renderBits("bitsB",streamB,false);renderBits("bitsOut",out,true);
     $("densityA").textContent=`1-density = ${pct(pA)} · ideal = ${pct(x)}`;
     $("densityB").textContent=`1-density = ${pct(pB)} · ideal = ${pct(y)}`;
-    $("densityOut").textContent=`1-density = ${pct(pOut)} · ideal product = ${pct(ideal)}`;
+    $("outputName").textContent=operation==="and"?"AND Output Stream":"XOR Output Stream";
+    $("densityOut").textContent=`1-density = ${pct(pOut)} · independent-bit target = ${pct(ideal)}`;
 
-    $("idealInt").textContent=idealInt.toFixed(3);
-    $("stochInt").textContent=stochInt.toFixed(3);
+    $("idealLabel").textContent=operation==="and"?"IDEAL INTEGER PRODUCT":"INDEPENDENT-BIT XOR TARGET DENSITY";
+    $("idealInt").textContent=operation==="and"?idealInt.toFixed(3):pct(ideal);
+    $("idealSubLabel").textContent=operation==="and"?"A × B":"qXOR = x + y − 2xy (unipolar inputs)";
+    $("decodedLabel").textContent=operation==="and"?"STOCHASTIC DECODED PRODUCT":"MEASURED XOR OUTPUT DENSITY";
+    $("decodedSubLabel").textContent=operation==="and"?"pAND × 255²":"pXOR = fraction of output bits equal to 1";
+    $("stochInt").textContent=operation==="and"?stochInt.toFixed(3):pct(pOut);
+    $("depLabel").textContent=operation==="and"?"DEPENDENCE ERROR":"XOR DEVIATION FROM INDEPENDENCE";
+    $("depSub").textContent=operation==="and"?"pAND − pA·pB":"pXOR − (pA + pB − 2pA·pB)";
+    $("opErrorLabel").textContent=operation==="and"?"NORMALIZED MULTIPLICATION ERROR":"XOR DENSITY ERROR";
+    $("opErrorSub").textContent=operation==="and"?"pAND − ideal normalized product":"pXOR − [x + y − 2xy]";
+    $("relativeLabel").textContent=operation==="and"?"RELATIVE MULTIPLICATION ERROR":"RELATIVE ERROR";
+    $("relativeSub").textContent=operation==="and"?"|PSC − Pactual| / |Pactual| × 100":"Not an arithmetic sum metric for XOR";
+    $("signedRelativeLabel").textContent=operation==="and"?"SIGNED RELATIVE ERROR":"SIGNED RELATIVE ERROR";
+    $("signedRelativeSub").textContent=operation==="and"?"(PSC − Pactual) / Pactual × 100":"Not defined as ordinary addition error";
+    $("absErrorLabel").textContent=operation==="and"?"ABSOLUTE PRODUCT ERROR":"ABSOLUTE XOR DENSITY ERROR";
+    $("absErrorSub").textContent=operation==="and"?"|PSC − Pactual|":"|pXOR − independent-bit target|";
+    $("intErrorLabel").textContent=operation==="and"?"PRODUCT ERROR IN INTEGER SCALE":"SIGNED XOR DENSITY ERROR";
+    $("intErrorSub").textContent=operation==="and"?"PSC − Pactual":"pXOR − independent-bit target";
+    $("poutSub").textContent=`p${operation.toUpperCase()} × 100%`;
     $("repA").textContent=pct(Math.abs(repA));setClass($("repA"),repA);
     $("repB").textContent=pct(Math.abs(repB));setClass($("repB"),repB);
     $("dep").textContent=signedPct(dep);setClass($("dep"),dep);
     $("mult").textContent=signedPct(mult);setClass($("mult"),mult);
     $("relMult").textContent=relMult===null?"N/A":pct(relMult);setClass($("relMult"),relMult===null?0:relMult);
     $("signedRelMult").textContent=signedRelMult===null?"N/A":signedPct(signedRelMult);setClass($("signedRelMult"),signedRelMult===null?0:signedRelMult);
-    $("absIntErr").textContent=absIntErr.toFixed(3);setClass($("absIntErr"),absIntErr/Math.max(1,idealInt));
-    $("intErr").textContent=(intErr>=0?"+":"")+intErr.toFixed(3);
+    $("absIntErr").textContent=operation==="and"?absIntErr.toFixed(3):pct(Math.abs(mult));setClass($("absIntErr"),operation==="and"?absIntErr/Math.max(1,idealInt):Math.abs(mult));
+    $("intErr").textContent=operation==="and"?(intErr>=0?"+":"")+intErr.toFixed(3):signedPct(mult);
     $("pout").textContent=pct(pOut);
     $("lenMetric").textContent=L;
 
-    drawBarChart($("repChart"),["A","B","Product"],[pA,pB,pOut],[x,y,ideal]);
-    drawErrorChart($("errChart"),[repProduct,dep,mult]);
-    drawCumulative($("cumChart"),streamA,streamB,out,x,y,ideal);
+    drawBarChart($("repChart"),["A","B",operation==="and"?"Product":"XOR out"],[pA,pB,pOut],[x,y,ideal]);
+    drawErrorChart($("errChart"),[repProduct,dep,mult],operation);
+    drawCumulative($("cumChart"),streamA,streamB,out,x,y,ideal,operation);
+    $("cumLegend").textContent=operation==="and"?"Cumulative 1-density after each clock cycle. Dashed targets: A/255, B/255, and their product.":"Cumulative 1-density after each cycle. Dashed output target assumes independent unipolar input bits: x + y − 2xy; XOR is not ordinary numeric addition.";
+    $("errorLegend").textContent=operation==="and"?"Normalized multiplication error = representation-product error + dependence error.":"XOR density error = independent-input representation error + dependence from the actual bitstream pairing.";
+    $("explainGrid").innerHTML=operation==="and"?`
+      <div class="explain-card"><div class="explain-title">Normalized multiplication error</div><div class="formula">e = pAND − xy</div><div class="note">AND represents multiplication for unipolar stochastic numbers when the input streams are independent. The measured pairing can introduce dependence error.</div></div>
+      <div class="explain-card"><div class="explain-title">Decoded product</div><div class="formula">PSC = pAND × 255²; ideal = A×B</div><div class="note">This converts output 1-density back to the 8-bit operand product scale.</div></div>
+      <div class="explain-card"><div class="explain-title">Dependence and representation</div><div class="formula">pAND − xy = (pA·pB − xy) + (pAND − pA·pB)</div><div class="note">The first term comes from finite-stream input representation; the second from correlations between the two streams.</div></div>
+      <div class="explain-card"><div class="explain-title">Relative error</div><div class="formula">|PSC − A·B| / |A·B| × 100%</div><div class="note">Undefined when the ideal product is zero; can be large for small products.</div></div>`:`
+      <div class="explain-card"><div class="explain-title">What XOR computes</div><div class="formula">pXOR = pA + pB − 2pAB</div><div class="note">XOR outputs 1 only when the input bits differ. Its density is not generally the sum x+y.</div></div>
+      <div class="explain-card"><div class="explain-title">Independent-bit reference</div><div class="formula">qXOR = x + y − 2xy, where x=A/255, y=B/255</div><div class="note">This is a probability reference assuming independent input bits. The finite LFSR streams may be correlated, so measured pXOR can differ.</div></div>
+      <div class="explain-card"><div class="explain-title">No ordinary sum decode</div><div class="formula">A+B is not decoded from pXOR</div><div class="note">A single XOR output bit has density in [0,1], while x+y can reach 2. Use a proper stochastic adder architecture (for example, scaled addition) for arithmetic summation.</div></div>
+      <div class="explain-card"><div class="explain-title">Error shown here</div><div class="formula">eXOR = pXOR − (x+y−2xy)</div><div class="note">This is XOR-density error against the independent-input probability reference, not addition error.</div></div>`;
 
     const rows=[
       ["Input A",A,"8-bit unsigned operand"],
@@ -675,37 +721,37 @@
       ["SNG B",`${archB}, seed ${seedB}`,`taps = [${TAPS[archB].join(", ")}]`],
       ["Measured pA",pA.toFixed(6),`ideal A/255 = ${x.toFixed(6)}`],
       ["Measured pB",pB.toFixed(6),`ideal B/255 = ${y.toFixed(6)}`],
-      ["Measured pAND",pOut.toFixed(6),`ideal xy = ${ideal.toFixed(6)}`],
-      ["Normalized multiplication error",signedPct(mult),"pAND − ideal normalized product"],
-      ["Decoded stochastic product",stochInt.toFixed(3),"pAND × 255²"],
-      ["Absolute product error",absIntErr.toFixed(3),"|decoded stochastic product − actual product|"],
-      ["Relative multiplication error",relMult===null?"N/A":pct(relMult),"undefined when actual product is zero"],
-      ["Signed relative multiplication error",signedRelMult===null?"N/A":signedPct(signedRelMult),"positive = overestimation; negative = underestimation"]
+      ["Measured overlap pAB",pAB.toFixed(6),"fraction of cycles where both input bits are 1"],
+      [operation==="and"?"Measured pAND":"Measured pXOR",pOut.toFixed(6),operation==="and"?`independent-bit reference = ${ideal.toFixed(6)}`:`exact identity pXOR = pA + pB − 2pAB; independent reference = ${ideal.toFixed(6)}`],
+      [operation==="and"?"Normalized multiplication error":"XOR density error",signedPct(mult),operation==="and"?"pAND − xy":"pXOR − (x+y−2xy)"],
+      [operation==="and"?"Decoded stochastic product":"Ordinary sum decode",""+ (operation==="and"?stochInt.toFixed(3):"Not defined"),operation==="and"?"pAND × 255²":"XOR density is not a numeric A+B result"],
+      [operation==="and"?"Absolute product error":"Absolute XOR density error",operation==="and"?absIntErr.toFixed(3):pct(Math.abs(mult)),operation==="and"?"|decoded stochastic product − actual product|":"|pXOR − independent-bit reference|"],
+      [operation==="and"?"Relative multiplication error":"Relative arithmetic addition error",relMult===null?"N/A":pct(relMult),operation==="and"?"undefined when actual product is zero":"Not applicable to XOR output"],
+      [operation==="and"?"Signed relative multiplication error":"Signed arithmetic addition error",signedRelMult===null?"N/A":signedPct(signedRelMult),operation==="and"?"positive = overestimation; negative = underestimation":"Not applicable to XOR output"]
     ];
     $("details").innerHTML=rows.map(r=>`<tr><td>${r[0]}</td><td><strong>${r[1]}</strong></td><td>${r[2]}</td></tr>`).join("");
 
     $("formula").textContent =
-      `pA=${pA.toFixed(6)}, pB=${pB.toFixed(6)}, pAND=${pOut.toFixed(6)} | `+
-      `Dependence error = pAND − pA·pB = ${dep.toFixed(6)} (${signedPct(dep)}) | `+
-      `Representation-product error = pA·pB − xy = ${repProduct.toFixed(6)} (${signedPct(repProduct)}) | `+
-      `Normalized multiplication error = pAND − xy = ${mult.toFixed(6)} (${signedPct(mult)}) | `+
-      `Relative product error = ${relMult===null?"N/A (actual product = 0)":pct(relMult)} | `+
-      `Signed relative product error = ${signedRelMult===null?"N/A (actual product = 0)":signedPct(signedRelMult)}`;
+      `pA=${pA.toFixed(6)}, pB=${pB.toFixed(6)}, pAB=${pAB.toFixed(6)}, p${operation.toUpperCase()}=${pOut.toFixed(6)} | `+
+      `Independent-bit reference=${ideal.toFixed(6)} | deviation from independence=${dep.toFixed(6)} (${signedPct(dep)}) | `+
+      `Representation error=${repProduct.toFixed(6)} (${signedPct(repProduct)}) | operation density error=${mult.toFixed(6)} (${signedPct(mult)}) | `+
+      (operation==="and"?`decoded product=${stochInt.toFixed(3)}, relative product error=${relMult===null?"N/A (actual product = 0)":pct(relMult)}`:"XOR does not decode to ordinary A+B");
 
     fillRanking("rank16", TOP16);
     fillRanking("rank32", TOP32);
     drawTopPairsChart($("topPairsChart"), TOP16, TOP32);
 
-    window.currentSimulation={L,A,B,archA,archB,seedA,seedB,statesA,statesB,streamA,streamB,out,pA,pB,pOut,x,y,ideal,repA,repB,repProduct,dep,mult,stochInt,idealInt,intErr,absIntErr,relMult,signedRelMult};
+    window.currentSimulation={L,operation,A,B,archA,archB,seedA,seedB,statesA,statesB,streamA,streamB,out,pA,pB,pAB,pOut,x,y,ideal,repA,repB,repProduct,dep,mult,stochInt,idealInt,intErr,absIntErr,relMult,signedRelMult};
   }
 
-  $("L").addEventListener("change", updateRankSelector);
+  $("L").addEventListener("change", ()=>{updateRankSelector();simulate();});
   $("rankPair").addEventListener("change", ()=>{
     applyRankedPair();
     simulate();
   });
 
   $("simulate").addEventListener("click",simulate);
+  $("operation").addEventListener("change",simulate);
   $("preset16").addEventListener("click",()=>{
     $("L").value=16;$("A").value=170;$("B").value=150;
     $("archA").value="P3";$("seedA").value=174;
