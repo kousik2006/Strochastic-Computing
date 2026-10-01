@@ -7,17 +7,24 @@ module lfsr_structural #(
     input  wire         reset,
     output wire [N-1:0] q
 );
+    wire [N-1:0] tap_bit;
     wire feedback;
     wire [N-1:0] d;
 
+    genvar i;
+    generate
+        for (i = 0; i < N; i = i + 1) begin : TAP_AND
+            and (tap_bit[i], q[i], TAP_MASK[i]);
+        end
+    endgenerate
+
     xor_reduce_structural #(.N(N)) FEEDBACK_XOR (
-        .in(q & TAP_MASK),
+        .in(tap_bit),
         .out(feedback)
     );
 
     assign d[0] = feedback;
 
-    genvar i;
     generate
         for (i = 1; i < N; i = i + 1) begin : SHIFT
             assign d[i] = q[i-1];
