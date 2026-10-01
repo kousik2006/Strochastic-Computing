@@ -90,18 +90,15 @@ module tb_addition_comparison;
             $display("============================================================");
             $display("A = %0d (%b), B = %0d (%b)", A, A, B, B);
             $display("Exact binary sum = %0d", binary_sum);
-            $display("LFSR/Sobol stochastic-sum bits:");
+            $display("cycle | LFSR_sum | Sobol_sum | LFSR_sel | Sobol_sel");
 
-            // Both SC streams are collected during the same L cycles.
-            // Sampling at negedge captures the stable bit generated
-            // from the current sequence state.
             for (i = 0; i < L; i = i + 1) begin
                 @(negedge clk);
                 #1;
                 lfsr_ones = lfsr_ones + lfsr_sum_bit;
                 sobol_ones = sobol_ones + sobol_sum_bit;
 
-                $display("cycle=%0d  LFSR=%b  Sobol=%b  selL=%b  selS=%b",
+                $display("%5d | %b        | %b         | %b        | %b",
                          i+1, lfsr_sum_bit, sobol_sum_bit,
                          lfsr_select, sobol_select);
             end
@@ -110,7 +107,6 @@ module tb_addition_comparison;
 
             exact_sum = A + B;
 
-            // MUX scaled addition gives (x+y)/2.
             lfsr_estimate = (2.0 * lfsr_ones * max_value) / L;
             sobol_estimate = (2.0 * sobol_ones * max_value) / L;
 
@@ -135,11 +131,12 @@ module tb_addition_comparison;
         #20;
         reset = 0;
 
-        run_case(8'd20,  8'd30);
-        run_case(8'd64,  8'd96);
-        run_case(8'd128, 8'd64);
-        run_case(8'd200, 8'd40);
-        run_case(8'd255, 8'd255);
+        // Unsized literals make these tests automatically adapt to N.
+        run_case(20, 30);
+        run_case(64, 96);
+        run_case(128, 64);
+        run_case(200, 40);
+        run_case(255, 255);
 
         #20;
         $finish;
