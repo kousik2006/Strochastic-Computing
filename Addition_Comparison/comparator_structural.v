@@ -9,6 +9,7 @@ module comparator_structural #(
     wire [N:0] less;
     wire [N-1:0] xnor_bit;
     wire [N-1:0] less_bit;
+    wire [N-1:0] less_here;
 
     assign equal[N] = 1'b1;
     assign less[N]  = 1'b0;
@@ -19,8 +20,8 @@ module comparator_structural #(
             localparam integer K = N-1-i;
             xnor (xnor_bit[K], a[K], b[K]);
             and  (less_bit[K], ~a[K], b[K]);
-            and  (less[K], equal[K+1], less_bit[K]);
-            or   (less[K], less[K], less[K+1]);
+            and  (less_here[K], equal[K+1], less_bit[K]);
+            or   (less[K], less_here[K], less[K+1]);
             and  (equal[K], equal[K+1], xnor_bit[K]);
         end
     endgenerate
