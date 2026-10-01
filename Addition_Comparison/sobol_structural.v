@@ -8,7 +8,8 @@ module sobol_structural #(
     wire [N-1:0] index;
     wire [N-1:0] gray;
 
-    counter_structural #(.N(N)) INDEX_COUNTER (
+    // Use the same non-zero 1..2^N-1 sample space as the LFSR.
+    counter_255_structural #(.N(N)) INDEX_COUNTER (
         .clk(clk),
         .reset(reset),
         .q(index)
@@ -24,7 +25,7 @@ module sobol_structural #(
             end
         end
 
-        // Reverse the Gray-code bits to form the 1-D base-2 Sobol integer.
+        // Reverse Gray-code bits to form the 1-D base-2 Sobol sequence.
         for (i = 0; i < N; i = i + 1) begin : BIT_REVERSE
             assign value[i] = gray[N-1-i];
         end
