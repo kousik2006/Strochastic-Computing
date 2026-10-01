@@ -1,121 +1,182 @@
-# Binary vs LFSR-SC vs Sobol-SC Addition
+# Structural Binary vs LFSR-SC vs Sobol-SC Addition
 
-This directory contains the controlled addition experiment for the stochastic-computing project.
+This directory is the controlled addition study for the stochastic-computing project.
 
-## 1. Architecture
+## 1. Goal
 
-All three designs receive the same two unsigned N-bit binary operands A and B.
+The same two unsigned N-bit binary operands are applied to three designs:
+
+1. Structural binary ripple-carry adder
+2. Structural LFSR stochastic adder
+3. Structural Sobol stochastic adder
+
+The stochastic adders use the same MUX-based arithmetic. The sequence generator is the main architectural difference.
+
+## 2. Minimal top-level ports
 
 Binary:
-- exact N-bit + N-bit addition
-- N+1-bit result
+
+    input  A[N-1:0]
+    input  B[N-1:0]
+    output Sum[N:0]
 
 LFSR-SC:
-- A and B go through LFSR-based stochastic number generators
-- a third LFSR generates the MUX select stream
-- the arithmetic operation is a 2:1 MUX
+
+    input  clk
+    input  reset
+    input  A[N-1:0]
+    input  B[N-1:0]
+    output sum_bit
 
 Sobol-SC:
-- A and B go through Sobol-based stochastic number generators
-- a third Sobol source generates the MUX select stream
-- the arithmetic operation is the same 2:1 MUX
 
-Thus the two stochastic variants use the same binary inputs and the same arithmetic element; the sequence source is the controlled difference.
+    input  clk
+    input  reset
+    input  A[N-1:0]
+    input  B[N-1:0]
+    output sum_bit
 
-## 2. MUX-based stochastic addition
+There is deliberately no start, busy, done, random_value, stochastic_A, stochastic_B or select output port. Those signals are internal to the stochastic datapath. This keeps the top-level interface small and avoids unnecessary observable switching.
 
-For unipolar stochastic streams:
+The binary adder does not have a clock or reset because adding those ports would add hardware or switching without being part of the combinational addition being measured.
+
+## 3. Structural hierarchy
+
+Binary path:
+
+    A/B -> N x full_adder_structural -> Sum
+
+LFSR stochastic path:
+
+    A -> LFSR SNG -> comparator -> stochastic A --+
+                                                    |
+    B -> LFSR SNG -> comparator -> stochastic B --+-> 2:1 MUX -> sum_bit
+                                                    |
+                 LFSR -> select bit ---------------+
+
+Sobol stochastic path:
+
+    A -> Sobol SNG -> comparator -> stochastic A --+
+                                                    |
+    B -> Sobol SNG -> comparator -> stochastic B --+-> 2:1 MUX -> sum_bit
+                                                    |
+                 Sobol -> select bit --------------+
+
+The reusable structural blocks are:
+
+    full_adder_structural.v
+    dff_structural.v
+    xor_reduce_structural.v
+    comparator_structural.v
+    counter_structural.v
+    lfsr_structural.v
+    sobol_structural.v
+    mux2_structural.v
+    sng_lfsr_structural.v
+    sng_sobol_structural.v
+
+Top-level arithmetic cores:
+
+    binary_adder_parameterized.v
+    sc_adder_lfsr_structural.v
+    sc_adder_sobol_structural.v
+
+Testbench:
+
+    tb_addition_comparison.v
+
+## 4. MUX stochastic addition
+
+The stochastic arithmetic element is a 2:1 MUX:
 
     Y = A*S + B*(1-S)
 
-with P(S=1)=0.5:
+with a select stream whose probability is approximately 0.5.
+
+Therefore:
 
     E[Y] = (A+B)/2
 
-The MUX therefore implements scaled addition. The testbench removes the factor-of-two scaling when decoding the L-bit stochastic stream.
+The testbench removes this factor-of-two scaling when it decodes the stochastic stream.
 
-This experiment intentionally avoids the OR-based stochastic adder.
+This study intentionally does not use the OR-based stochastic adder.
 
-## 3. SC output
+## 5. N-bit encoding
 
-The stochastic DUTs output one stochastic sum bit per cycle, plus busy/done and debug stream bits.
+The SNGs use unipolar encoding:
 
-The testbench:
-- drives the same A/B into all three DUTs;
-- collects exactly L stochastic sum bits from LFSR-SC and Sobol-SC;
-- counts the ones;
-- decodes each estimate;
-- compares both estimates with the exact binary sum.
+    P(bit=1) = value / 2^N
 
-The stochastic-to-binary decoder is intentionally kept in the testbench, not in the synthesized stochastic datapath. This avoids inserting a separate conversion circuit into the arithmetic-core area/power measurement.
+The comparator therefore generates a 1 when the generated N-bit sequence value is less than the N-bit input value.
 
-## 4. Scaling
+For L stochastic output bits and K ones:
 
-For N-bit unsigned inputs:
+    decoded_sum = 2*K*2^N/L
 
-    MAX = 2^N - 1
-    x = A / MAX
-    y = B / MAX
+The exact reference is:
 
-The MUX produces the scaled value:
+    binary_sum = A+B
 
-    (x+y)/2
+The testbench reports the decoded LFSR and Sobol estimates and their errors.
 
-If K ones are observed in L output bits:
+## 6. Parameter N
 
-    decoded_sum = 2*K*MAX/L
-
-The exact binary result is:
-
-    A+B
-
-## 5. Parameters
+The arithmetic and sequence hardware is parameterized by N.
 
 Default:
 
     N = 8
-    L = 32
+    L = 32 in the testbench
 
-L can be set to 16 or 32.
+To study another input width, change only the testbench parameter N and use valid test vectors for that width.
 
-The arithmetic and sequence interfaces are parameterized by N. For N other than 8, provide a suitable N-bit LFSR TAP_MASK. The default 8-bit mask 10110010 corresponds to the project's P2 feedback taps [7,5,4,1].
+For the LFSR, a suitable N-bit primitive-polynomial TAP_MASK should be selected. The default 8-bit mask is the project's P2 feedback mask:
 
-The Sobol generator uses a parameterized 1-D base-2 direction-number construction.
+    10110010
 
-## 6. Files
+The Sobol implementation is a structural 1-D base-2 sequence using a binary counter, Gray-code XOR network and bit reversal.
 
-    binary_adder_parameterized.v
-    sc_lfsr_parameterized.v
-    sc_sng_lfsr_parameterized.v
-    sc_adder_lfsr_parameterized.v
-    sc_sobol_parameterized.v
-    sc_sng_sobol_parameterized.v
-    sc_adder_sobol_parameterized.v
-    tb_addition_comparison.v
+## 7. Why no stochastic-to-binary converter is inside the DUT?
 
-## 7. Vivado
+The stochastic arithmetic core naturally produces one bit per clock. A binary accumulator/decoder would add registers, adders and switching to the synthesized stochastic arithmetic core.
 
-Synthesis tops:
+Therefore the testbench performs the L-bit accumulation and decoding. This lets the area/power experiment focus on the actual stochastic arithmetic datapath.
+
+A separate system-level experiment can later include the stochastic-to-binary converter if required.
+
+## 8. Vivado comparison
+
+Use these three synthesis tops:
 
     binary_adder_parameterized
-    sc_adder_lfsr_parameterized
-    sc_adder_sobol_parameterized
+    sc_adder_lfsr_structural
+    sc_adder_sobol_structural
 
 Do not synthesize the testbench.
 
-For fair comparison, keep N, L, FPGA part, clock constraint, synthesis settings, implementation settings and activity assumptions identical.
+Keep the following identical whenever possible:
 
-Measure at least:
-- area/resources
-- critical delay
-- average power
-- latency
-- energy per completed addition
+    N
+    FPGA part
+    clock constraint
+    synthesis settings
+    implementation settings
+    power-analysis assumptions
 
-The binary adder is combinational while the stochastic designs require L cycles, so average power and energy per operation should be reported separately.
+Record:
 
-## 8. Relation to the existing project
+    LUTs
+    FFs
+    other resources
+    critical path delay
+    power
+    latency
+    energy per completed operation
 
-The repository already contains the stochastic-computing fundamentals, exhaustive LFSR polynomial/seed investigation, separate L=16/L=32 stochastic multiplier RTL and Vivado results, and the structural 8x8 Booth multiplier.
+The binary adder is combinational. The stochastic adders require L cycles to produce an L-bit stochastic result, so power and energy/operation must be interpreted together with latency.
 
-This directory extends the same methodology from multiplication to addition while holding the A/B workload and MUX arithmetic structure constant.
+## 9. Important fairness point
+
+The top-level binary adder has no clock because it is a combinational reference. The stochastic designs necessarily require a clock because their LFSR/Sobol state advances every cycle.
+
+Do not add unused clock, start, done or debug ports to the binary reference merely to make the port lists visually identical. The important common workload is the same A and B operands.
