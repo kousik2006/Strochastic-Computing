@@ -20,9 +20,11 @@ module sng_lfsr_structural #(
         .q(random_value)
     );
 
+    // LFSR cycles through 1..2^N-1. Inclusive comparison gives
+    // P(1) = input_value / (2^N-1), matching the Sobol path below.
     comparator_structural #(.N(N)) COMPARE (
         .a(random_value),
         .b(input_value),
-        .a_lt_b(stochastic_bit)
+        .a_le_b(stochastic_bit)
     );
 endmodule
