@@ -58,10 +58,11 @@ module tb_addition_comparison;
             lfsr_ones = 0;
             sobol_ones = 0;
 
-            // Unipolar N-bit encoding: P(1) = value / 2^N.
+            // Both SNGs use the same 1..(2^N-1) unipolar coding.
             scale = 1.0;
             for (i = 0; i < N; i = i + 1)
                 scale = scale * 2.0;
+            scale = scale - 1.0;
 
             $display("");
             $display("============================================================");
@@ -81,7 +82,9 @@ module tb_addition_comparison;
 
             exact_sum = A + B;
 
-            // MUX addition produces (A+B)/2 in stochastic probability.
+            // MUX addition gives (A+B)/2 in probability.
+            // With the common 1..(2^N-1) encoding:
+            // decoded_sum = 2*K*(2^N-1)/L.
             lfsr_estimate = (2.0 * lfsr_ones * scale) / L;
             sobol_estimate = (2.0 * sobol_ones * scale) / L;
 
