@@ -2,8 +2,7 @@ module sc_adder_lfsr_structural #(
     parameter integer N = 8,
     parameter [N-1:0] TAP_MASK = 8'b10110010,
     parameter [N-1:0] SEED_A = 8'b11000110,
-    parameter [N-1:0] SEED_B = 8'b01010110,
-    parameter [N-1:0] SEED_S = 8'b11111011
+    parameter [N-1:0] SEED_B = 8'b01010110
 )(
     input  wire         clk,
     input  wire         reset,
@@ -14,7 +13,6 @@ module sc_adder_lfsr_structural #(
     wire stochastic_A;
     wire stochastic_B;
     wire select_bit;
-    wire [N-1:0] select_random;
 
     sng_lfsr_structural #(
         .N(N), .TAP_MASK(TAP_MASK), .SEED(SEED_A)
@@ -32,14 +30,11 @@ module sc_adder_lfsr_structural #(
         .stochastic_bit(stochastic_B)
     );
 
-    lfsr_structural #(
-        .N(N), .TAP_MASK(TAP_MASK), .SEED(SEED_S)
-    ) SELECT_LFSR (
-        .clk(clk), .reset(reset),
-        .q(select_random)
+    toggle_structural SELECT_TOGGLE (
+        .clk(clk),
+        .reset(reset),
+        .q(select_bit)
     );
-
-    assign select_bit = select_random[N-1];
 
     mux2_structural MUX_ADD (
         .d0(stochastic_B),
