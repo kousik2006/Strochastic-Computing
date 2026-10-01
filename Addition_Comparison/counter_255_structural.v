@@ -23,11 +23,14 @@ module counter_255_structural #(
                 .cout(carry[i+1])
             );
         end
+    endgenerate
 
-        // For the 8-bit case, q = 255 wraps to 1.
-        // The comparator is structural and parameterized for N bits.
-        assign at_max = &q;
+    and_reduce_structural #(.N(N)) MAX_DETECT (
+        .in(q),
+        .out(at_max)
+    );
 
+    generate
         for (i = 0; i < N; i = i + 1) begin : NEXT
             mux2_structural NEXT_MUX (
                 .d0(incremented[i]),
