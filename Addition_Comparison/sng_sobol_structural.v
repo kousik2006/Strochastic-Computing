@@ -14,9 +14,11 @@ module sng_sobol_structural #(
         .value(sequence_value)
     );
 
+    // Sobol path is also restricted to 1..2^N-1, so both SNGs
+    // use exactly the same inclusive probability encoding.
     comparator_structural #(.N(N)) COMPARE (
         .a(sequence_value),
         .b(input_value),
-        .a_lt_b(stochastic_bit)
+        .a_le_b(stochastic_bit)
     );
 endmodule
