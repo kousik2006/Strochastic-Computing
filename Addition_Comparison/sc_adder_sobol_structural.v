@@ -10,7 +10,6 @@ module sc_adder_sobol_structural #(
     wire stochastic_A;
     wire stochastic_B;
     wire select_bit;
-    wire [N-1:0] select_sequence;
 
     sng_sobol_structural #(.N(N)) SNG_A (
         .clk(clk), .reset(reset),
@@ -24,12 +23,11 @@ module sc_adder_sobol_structural #(
         .stochastic_bit(stochastic_B)
     );
 
-    sobol_structural #(.N(N)) SELECT_SOBOL (
-        .clk(clk), .reset(reset),
-        .value(select_sequence)
+    toggle_structural SELECT_TOGGLE (
+        .clk(clk),
+        .reset(reset),
+        .q(select_bit)
     );
-
-    assign select_bit = select_sequence[N-1];
 
     mux2_structural MUX_ADD (
         .d0(stochastic_B),
