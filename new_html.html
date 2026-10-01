@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stochastic Multiplier — Multi-Precision Interactive Simulator</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#17202a;--muted:#687385;--border:#dfe4ec;--accent:#315efb;--accent2:#7c3aed;--good:#16855b;--warn:#b7791f;--bad:#d04444;--shadow:0 8px 28px rgba(20,30,50,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1380px;margin:auto;padding:24px}h1{margin:0 0 6px;font-size:30px}h2{font-size:19px;margin:0 0 12px}h3{font-size:15px;margin:0 0 8px}
+.subtitle{color:var(--muted);margin-bottom:20px;line-height:1.5}.card{background:var(--card);border:1px solid var(--border);border-radius:15px;padding:18px;margin-bottom:16px;box-shadow:var(--shadow)}
+.controls{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:12px}label{display:block;font-size:12px;font-weight:800;color:#344054;margin-bottom:7px;text-transform:uppercase;letter-spacing:.035em}
+select,input{width:100%;height:46px;border:1px solid #aeb8c8;border-radius:9px;padding:0 12px;font-size:16px;font-weight:650;background:#fff;color:#101828}input[type=number]{appearance:textfield}input[type=number]{background:#f8faff;font-size:18px;font-weight:800}select:focus-visible,input:focus-visible{outline:3px solid rgba(49,94,251,.24);border-color:var(--accent)}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:800;cursor:pointer;background:var(--accent);color:#fff}button.secondary{background:#eef2ff;color:#2947ad}button.ghost{background:#f1f3f7;color:#344054;border:1px solid var(--border)}button:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;gap:9px;align-items:end;margin-top:16px;flex-wrap:wrap}.note{font-size:13px;color:#475467;line-height:1.55}.badge{display:inline-block;border-radius:999px;padding:4px 8px;background:#eef2ff;color:#2947ad;font-size:11px;font-weight:800}
+.status{padding:10px 12px;border-radius:10px;background:#f7f8fa;border:1px solid var(--border);font-size:12px;color:var(--muted);margin-top:12px}
+.method-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.method{border:1px solid var(--border);border-radius:12px;padding:14px;background:#fbfcff}
+.method-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.method-name{font-size:15px;font-weight:850}.method .mini{font-size:11px;color:var(--muted);line-height:1.5}
+.pill{font-size:10px;font-weight:800;border-radius:999px;padding:3px 7px;background:#edf7f2;color:var(--good)}.pill.warn{background:#fff6e7;color:var(--warn)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.metric{border:1px solid var(--border);border-radius:11px;padding:12px}.metric .k{font-size:10px;color:var(--muted);font-weight:800}.metric .v{font-size:18px;font-weight:850;margin-top:5px}.metric .s{font-size:10px;color:var(--muted);margin-top:3px}
+.table-wrap{overflow:auto}.table{width:100%;border-collapse:collapse;font-size:14px}.table th,.table td{text-align:left;border-bottom:1px solid var(--border);padding:11px 10px;white-space:nowrap}.table th{color:#475467;font-size:11px;font-weight:850;text-transform:uppercase;background:#f8f9fc}.table td{color:#1d2939}.table tr.highlight{background:#eef2ff}#singleTable td:nth-child(4),#singleTable td:nth-child(7){background:#f1f4ff;color:#253b80;font-weight:800}#singleTable td:nth-child(7){color:#5424a8}
+.chart-box{border:1px solid var(--border);border-radius:12px;padding:12px;background:#fff}.chart-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:10px}.chart-toolbar>div{min-width:140px}
+canvas{display:block;width:100%;height:330px}.small-canvas{height:290px}.legend{font-size:11px;color:var(--muted);margin-top:7px}
+.stream-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.stream-card{border:1px solid #cbd3e0;border-radius:12px;padding:14px;background:#fff}.stream-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px}.bits{display:flex;gap:3px;flex-wrap:wrap}
+.bit{width:20px;height:27px;border-radius:4px;background:#e1e6ee;border:1px solid #c5ceda;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:850;color:#344054}.bit.one{background:#263b77;border-color:#263b77;color:#fff}.bit.out{background:#5b21b6;border-color:#5b21b6;color:#fff}
+.hero{border:1px solid #c8d2fa;border-radius:12px;padding:16px;background:#f5f7ff}.hero .big{font-size:32px;line-height:1.2;font-weight:900;color:#253b80;margin:3px 0 5px}.hero .small{font-size:13px;color:#475467;line-height:1.45}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f5f6f8;border-radius:9px;padding:10px;font-size:11px;overflow:auto}
+.footer{color:var(--muted);font-size:11px;text-align:center;padding:10px 0 20px}
+@media(max-width:1100px){.controls{grid-template-columns:repeat(3,1fr)}.method-grid{grid-template-columns:repeat(2,1fr)}.stream-grid{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.grid2,.grid3,.result-grid{grid-template-columns:1fr}.controls{grid-template-columns:1fr 1fr}.method-grid,.stream-grid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.wrap{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Stochastic Multiplier — Multi-Precision Interactive Simulator</h1>
+<div class="subtitle">LFSR, RAMP, Even-Distribution (ED), and Sobol/quasirandom SNGs for unipolar stochastic multiplication. The 8-bit curves use the completed notebook results; 16-bit and 32-bit modes use scalable live sampling.</div>
+
+<div class="card">
+<h2>1. Simulation configuration</h2>
+<div class="controls">
+<div><label>Input width</label><select id="width"><option value="8" selected>8-bit</option><option value="16">16-bit</option><option value="32">32-bit</option></select></div>
+<div><label>Stream length</label><select id="L"><option>16</option><option selected>32</option><option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option></select></div>
+<div><label>Input A</label><input id="A" type="number" value="170" min="0" max="255"></div>
+<div><label>Input B</label><input id="B" type="number" value="150" min="0" max="255"></div>
+<div><label>Benchmark samples</label><select id="samples"><option value="512">512</option><option value="2048" selected>2,048</option><option value="8192">8,192</option></select></div>
+<div><label>Metric</label><select id="metric"><option value="MAE" selected>MAE</option><option value="RMSE">RMSE</option><option value="Max_Error">Maximum error</option><option value="Bias">Bias</option><option value="Dependence">Mean |dependence error|</option></select></div>
+</div>
+<div class="actions"><button id="runSingle">Run single-input comparison</button><button id="runBenchmark">Run benchmark for selected width</button><button id="load8" class="secondary">Load notebook 8-bit dataset</button><button id="reset" class="ghost">Reset</button></div>
+<div id="status" class="status">8-bit benchmark data is preloaded from the completed exhaustive notebook study.</div>
+</div>
+
+<div class="card">
+<h2>2. SNG architectures</h2>
+<div class="method-grid">
+<div class="method"><div class="method-head"><div class="method-name">LFSR</div><span class="pill">Maximal-length</span></div><div class="mini">8-bit: notebook P2 = [7,5,4,1]. 16-bit: x^16 + x^14 + x^13 + x^11 + 1. 32-bit: x^32 + x^22 + x^2 + x + 1. A and B are separate instances with different non-zero seeds.</div></div>
+<div class="method"><div class="method-head"><div class="method-name">RAMP</div><span class="pill">Scalable</span></div><div class="mini">Uses r(i)=i/L and compares it with value/(2^N−1). The same deterministic ramp is used for both operands, so stream dependence is intentionally measured.</div></div>
+<div class="method"><div class="method-head"><div class="method-name">ED</div><span class="pill warn">8-bit verified</span></div><div class="mini">8-bit mode uses the notebook's hardware-faithful B=1, V=16, K=4 construction. 16/32-bit modes use a scalable even-distribution software model; they are not claimed to be the same hardware circuit.</div></div>
+<div class="method"><div class="method-head"><div class="method-name">Sobol</div><span class="pill">Scalable</span></div><div class="mini">First-dimension low-discrepancy construction with 32-bit direction numbers. Threshold comparison is performed at the selected input precision.</div></div>
+</div>
+</div>
+
+<div class="card">
+<h2>3. Single-input side-by-side comparison</h2>
+<div class="result-grid" id="singleHeroes"></div>
+<div class="table-wrap" style="margin-top:12px"><table class="table"><thead><tr><th>Method</th><th>P(A)</th><th>P(B)</th><th>P(AND)</th><th>Exact product</th><th>Error</th><th>Decoded product</th><th>Dependence</th></tr></thead><tbody id="singleTable"></tbody></table></div>
+</div>
+
+<div class="card">
+<h2>4. Generated streams — first cycles</h2>
+<div class="note" style="margin-bottom:10px">The display is limited to the first 64 stochastic bits so the streams remain readable.</div>
+<div class="stream-grid" id="streamGrid"></div>
+</div>
+
+<div class="card">
+<h2>5. Interactive benchmark comparison</h2>
+<div class="grid2">
+<div class="chart-box">
+<h3>Same L → compare different SNG methods</h3>
+<div class="chart-toolbar"><div><label>Selected L</label><select id="sameL"></select></div><div><label>Width</label><select id="sameLWidth"><option>8</option><option>16</option><option>32</option></select></div><div><label>Metric</label><select id="sameLMetric"></select></div></div>
+<canvas id="sameLChart" class="small-canvas"></canvas>
+<div class="legend">8-bit = exhaustive 65,536-pair notebook result. 16/32-bit = sampled benchmark after you run it.</div>
+</div>
+<div class="chart-box">
+<h3>Same SNG → compare different stream lengths</h3>
+<div class="chart-toolbar"><div><label>Method</label><select id="sameMethod"><option>LFSR</option><option>RAMP</option><option>ED</option><option>Sobol</option></select></div><div><label>Width</label><select id="sameMethodWidth"><option>8</option><option>16</option><option>32</option></select></div><div><label>Metric</label><select id="sameMethodMetric"></select></div></div>
+<canvas id="sameMethodChart" class="small-canvas"></canvas>
+<div class="legend">The x-axis is logarithmic because L doubles from 16 to 1024.</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>6. Precision scaling</h2>
+<div class="chart-box">
+<div class="chart-toolbar"><div><label>Stream length</label><select id="precisionL"></select></div><div><label>Metric</label><select id="precisionMetric"></select></div></div>
+<canvas id="precisionChart"></canvas>
+<div class="legend">This view compares the selected metric across 8-, 16-, and 32-bit precision for the same L and LFSR method. Run the higher-width benchmarks to populate them.</div>
+</div>
+</div>
+
+<div class="card">
+<h2>7. Notebook baseline — 8-bit exhaustive results</h2>
+<div class="note" style="margin-bottom:10px">These values are the measured results from the completed 256 × 256 multiplication study in the notebook. They are not rerun by the browser.</div>
+<div class="table-wrap"><table class="table"><thead><tr><th>SNG</th><th>L</th><th>MAE</th><th>RMSE</th><th>Max</th><th>Bias</th><th>|Dependence|</th><th>|Representation|</th><th>Decoded MAE</th></tr></thead><tbody id="baselineTable"></tbody></table></div>
+</div>
+
+<div class="card">
+<h2>8. Methodology and scalability notes</h2>
+<div class="grid3">
+<div class="method"><h3>8-bit</h3><div class="note">All 256 × 256 operand pairs are evaluated for every SNG and every L. This is the exhaustive baseline from the notebook.</div></div>
+<div class="method"><h3>16-bit</h3><div class="note">The complete 65,536 × 65,536 space is too large for interactive exhaustive evaluation. The simulator uses reproducible random + structured sampling.</div></div>
+<div class="method"><h3>32-bit</h3><div class="note">The input-pair space is 2^64. The simulator uses sampled pairs with the same stochastic AND multiplication and error definitions.</div></div>
+</div>
+<div class="code" style="margin-top:12px">Unipolar representation: P = value / (2^N - 1)
+Multiplication: S_out[i] = S_A[i] AND S_B[i]
+Decoded product: P_SC × (2^N - 1)^2
+Normalized error: P_SC - P_exact
+Dependence error: P_AND - P_A × P_B</div>
+</div>
+
+<div class="footer">Standalone HTML • No external JavaScript libraries required • Notebook baseline retained • 16/32-bit ED is explicitly marked as a scalable software model.</div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const L_VALUES=[16,32,64,128,256,512,1024], METHODS=["LFSR","RAMP","ED","Sobol"], METRICS=["MAE","RMSE","Max_Error","Bias","Dependence"];
+const DATA8=[{"SNG":"LFSR","L":16,"MAE":0.069712,"RMSE":0.086346,"Max_Error":0.24459,"Bias":0.053471,"Dependence":0.019016,"Representation":0.076178,"Decoded_MAE":4533.025541},{"SNG":"RAMP","L":16,"MAE":0.114747,"RMSE":0.132709,"Max_Error":0.310535,"Bias":0.114747,"Dependence":0.08278,"Representation":0.031006,"Decoded_MAE":7461.426759},{"SNG":"ED","L":16,"MAE":0.042528,"RMSE":0.053631,"Max_Error":0.184003,"Bias":-0.000916,"Dependence":0.039055,"Representation":0.019485,"Decoded_MAE":2765.366684},{"SNG":"Sobol","L":16,"MAE":0.040969,"RMSE":0.049693,"Max_Error":0.149595,"Bias":0.034096,"Dependence":0.023544,"Representation":0.027285,"Decoded_MAE":2664.035728},{"SNG":"LFSR","L":32,"MAE":0.019419,"RMSE":0.024673,"Max_Error":0.102477,"Bias":0.00257,"Dependence":0.023437,"Representation":0.023517,"Decoded_MAE":1262.696807},{"SNG":"RAMP","L":32,"MAE":0.098877,"RMSE":0.118393,"Max_Error":0.279285,"Bias":0.098877,"Dependence":0.083134,"Representation":0.015503,"Decoded_MAE":6429.504883},{"SNG":"ED","L":32,"MAE":0.034484,"RMSE":0.044661,"Max_Error":0.157367,"Bias":-0.000916,"Dependence":0.034085,"Representation":0.007782,"Decoded_MAE":2242.294617},{"SNG":"Sobol","L":32,"MAE":0.026995,"RMSE":0.033093,"Max_Error":0.104318,"Bias":0.022253,"Dependence":0.020005,"Representation":0.012167,"Decoded_MAE":1755.345989},{"SNG":"LFSR","L":64,"MAE":0.032835,"RMSE":0.039563,"Max_Error":0.108886,"Bias":0.029465,"Dependence":0.010962,"Representation":0.031318,"Decoded_MAE":2135.109605},{"SNG":"RAMP","L":64,"MAE":0.091065,"RMSE":0.111677,"Max_Error":0.26366,"Bias":0.091065,"Dependence":0.083253,"Representation":0.007751,"Decoded_MAE":5921.481568},{"SNG":"ED","L":64,"MAE":0.033631,"RMSE":0.043547,"Max_Error":0.154369,"Bias":-0.000916,"Dependence":0.03334,"Representation":0.006817,"Decoded_MAE":2186.870656},{"SNG":"Sobol","L":64,"MAE":0.021133,"RMSE":0.026618,"Max_Error":0.080204,"Bias":0.015445,"Dependence":0.018715,"Representation":0.004888,"Decoded_MAE":1374.179607},{"SNG":"LFSR","L":128,"MAE":0.031097,"RMSE":0.03647,"Max_Error":0.094664,"Bias":0.030395,"Dependence":0.008728,"Representation":0.025688,"Decoded_MAE":2022.089951},{"SNG":"RAMP","L":128,"MAE":0.087189,"RMSE":0.108446,"Max_Error":0.255848,"Bias":0.087189,"Dependence":0.083298,"Representation":0.003876,"Decoded_MAE":5669.454315},{"SNG":"ED","L":128,"MAE":0.032273,"RMSE":0.04205,"Max_Error":0.149109,"Bias":-0.000916,"Dependence":0.032382,"Representation":0.003401,"Decoded_MAE":2098.581568},{"SNG":"Sobol","L":128,"MAE":0.0189,"RMSE":0.024409,"Max_Error":0.068885,"Bias":0.011809,"Dependence":0.018303,"Representation":0.001961,"Decoded_MAE":1228.973046},{"SNG":"LFSR","L":256,"MAE":0.002741,"RMSE":0.003444,"Max_Error":0.013018,"Bias":0.001202,"Dependence":0.002792,"Representation":0.001172,"Decoded_MAE":178.225868},{"SNG":"RAMP","L":256,"MAE":0.085259,"RMSE":0.106864,"Max_Error":0.251957,"Bias":0.085259,"Dependence":0.083317,"Representation":0.001938,"Decoded_MAE":5543.936791},{"SNG":"ED","L":256,"MAE":0.031959,"RMSE":0.041718,"Max_Error":0.143204,"Bias":-0.000916,"Dependence":0.032232,"Representation":0.001907,"Decoded_MAE":2078.104543},{"SNG":"Sobol","L":256,"MAE":0.018061,"RMSE":0.02367,"Max_Error":0.067874,"Bias":0.00995,"Dependence":0.018169,"Representation":0.001945,"Decoded_MAE":1174.387607},{"SNG":"LFSR","L":512,"MAE":0.002698,"RMSE":0.003404,"Max_Error":0.01411,"Bias":0.001198,"Dependence":0.002825,"Representation":0.000681,"Decoded_MAE":175.451639},{"SNG":"RAMP","L":512,"MAE":0.083809,"RMSE":0.105792,"Max_Error":0.251942,"Bias":0.083809,"Dependence":0.082839,"Representation":0.000969,"Decoded_MAE":5449.675591},{"SNG":"ED","L":512,"MAE":0.031909,"RMSE":0.041671,"Max_Error":0.143204,"Bias":-0.000916,"Dependence":0.032203,"Representation":0.001421,"Decoded_MAE":2074.908204},{"SNG":"Sobol","L":512,"MAE":0.017998,"RMSE":0.02363,"Max_Error":0.06692,"Bias":0.009966,"Dependence":0.018117,"Representation":0.001938,"Decoded_MAE":1170.343857},{"SNG":"LFSR","L":1024,"MAE":0.002981,"RMSE":0.003754,"Max_Error":0.015086,"Bias":0.001726,"Dependence":0.002847,"Representation":0.000469,"Decoded_MAE":193.829748},{"SNG":"RAMP","L":1024,"MAE":0.083206,"RMSE":0.105387,"Max_Error":0.250965,"Bias":0.083206,"Dependence":0.082721,"Representation":0.000484,"Decoded_MAE":5410.482613},{"SNG":"ED","L":1024,"MAE":0.031881,"RMSE":0.041624,"Max_Error":0.143204,"Bias":-0.000916,"Dependence":0.032175,"Representation":0.001363,"Decoded_MAE":2073.079085},{"SNG":"Sobol","L":1024,"MAE":0.017998,"RMSE":0.02363,"Max_Error":0.06692,"Bias":0.009966,"Dependence":0.018117,"Representation":0.001938,"Decoded_MAE":1170.343857}];
+const TAPS={8:{A:[7,5,4,1],B:[7,5,4,1],label:"P2"},16:{A:[15,13,12,10],B:[15,13,12,10],label:"x^16+x^14+x^13+x^11+1"},32:{A:[31,21,1,0],B:[31,21,1,0],label:"x^32+x^22+x^2+x+1"}};
+const SEEDS={8:{A:198,B:86},16:{A:0xACE1,B:0xBEEF},32:{A:0x12345678,B:0x9E3779B9}};
+const benchmark={8:DATA8.slice(),16:[],32:[]};
+const $=id=>document.getElementById(id), maxForBits=n=>Math.pow(2,n)-1, clamp=(x,lo,hi)=>Math.min(hi,Math.max(lo,x)), pct=x=>(x*100).toFixed(4)+"%", fmtInt=x=>Number(x).toLocaleString(undefined,{maximumFractionDigits:3});
+function setStatus(s){$("status").textContent=s}
+function setInputRange(){const n=+$("width").value,m=maxForBits(n);$("A").max=$("B").max=String(m);if(+$("A").value>m)$("A").value=Math.floor(m*.666);if(+$("B").value>m)$("B").value=Math.floor(m*.588)}
+function lfsrNext(state,taps,width){let fb=0;for(const t of taps)fb^=(state>>>t)&1;return ((((state<<1)>>>0)|fb)>>>0)}
+function lfsrStates(seed,taps,width,L){let s=seed>>>0,a=new Array(L);for(let i=0;i<L;i++){a[i]=s;s=lfsrNext(s,taps,width)}return a}
+function lfsrStream(value,L,width,op){if(value===0)return new Array(L).fill(0);return lfsrStates(SEEDS[width][op],TAPS[width][op],width,L).map(s=>s<=value?1:0)}
+function rampStream(value,L,width){const p=value/maxForBits(width),a=new Array(L);for(let i=0;i<L;i++)a[i]=i/L<p?1:0;return a}
+function mulberry32(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+function edStream8(value,L,seed){
+  const V=16,K=4,period=15;let q=Math.floor(value/V);x=value%V;let y=0,s=[0,0,0,0];
+  if(q===15){s=[1,1,1,1]}else{let t=q+1,z=t;while((z&1)===0){z>>=1;y++}for(let i=y+1;i<K;i++)s[i]=(t>>i)&1}
+  const rng=mulberry32(seed),order=Array.from({length:period},(_,i)=>i);for(let i=period-1;i>0;i--){let j=Math.floor(rng()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
+  const R=Array.from({length:K},()=>new Array(period).fill(0));let st=0;
+  for(let i=0;i<K;i++){const w=1<<i;for(let j=st;j<st+w;j++)R[i][order[j]]=1;st+=w}
+  const G=new Array(period).fill(0);for(let i=0;i<K;i++)if((x>>i)&1)for(let j=0;j<period;j++)G[j]|=R[i][j];
+  const A=Array.from({length:K},()=>new Array(period).fill(0));for(let i=0;i<K;i++)for(let j=0;j<period;j++)A[i][j]=i>y?s[i]:(i===y?G[j]:1-G[j]);
+  const wIn=[];for(let i=0;i<K;i++)for(let z=0;z<(1<<i);z++)wIn.push(A[i]);wIn.push(new Array(period).fill(s[0]));
+  let cur=[wIn[0].slice(),wIn[1].slice()],idx=2;if(Math.floor(rng()*2)===1)[cur[0],cur[1]]=[cur[1],cur[0]];
+  for(let stage=1;stage<K;stage++){const old=1<<stage,ng=wIn.slice(idx,idx+old),next=Array.from({length:2*old},()=>new Array(period));for(let j=0;j<old;j++){const c=Math.floor(rng()*2),a=cur[j],b=ng[j];if(c===0){next[2*j]=a.slice();next[2*j+1]=b.slice()}else{next[2*j]=b.slice();next[2*j+1]=a.slice()}}cur=next;idx+=old}
+  const stream=[];for(let col=0;col<period;col++)for(let row=0;row<cur.length;row++)stream.push(cur[row][col]);
+  const out=[];for(let i=0;i<L;i++)out.push(stream[i%stream.length]);return out
+}
+function edStreamScalable(value,L,width,seed){const max=maxForBits(width),out=new Array(L);let prev=0;for(let i=0;i<L;i++){const next=Math.floor(((i+1)*value)/max);out[i]=next-prev;prev=next}if(seed%2===1&&L>1){const sh=seed%L;return out.slice(sh).concat(out.slice(0,sh))}return out}
+function sobolSequence(L){const V=new Array(32);for(let i=0;i<32;i++)V[i]=2**(31-i)>>>0;const seq=new Array(L);let x=0;for(let n=0;n<L;n++){if(n===0)x=0;else{let c=0,v=n-1;while((v&1)!==0){v>>>=1;c++}x=(x^V[c])>>>0}seq[n]=x>>>0}return seq}
+function sobolStream(value,L,width,offset){const max=maxForBits(width);if(value===0)return new Array(L).fill(0);if(value===max)return new Array(L).fill(1);const seq=sobolSequence(L+offset),shift=32-width;return seq.slice(offset).map(x=>(width===32?x>>>0:x>>>shift)<value?1:0)}
+function makeStream(method,value,L,width,op){if(method==="LFSR")return lfsrStream(value,L,width,op);if(method==="RAMP")return rampStream(value,L,width);if(method==="ED")return width===8?edStream8(value,L,op===0?42:43):edStreamScalable(value,L,width,op===0?42:43);return sobolStream(value,L,width,op)}
+function mean(a){let s=0;for(const x of a)s+=x;return s/a.length}
+function singleRun(method,A,B,L,width){const max=maxForBits(width),a=makeStream(method,A,L,width,0),b=makeStream(method,B,L,width,1),out=a.map((x,i)=>x&b[i]),pA=mean(a),pB=mean(b),pOut=mean(out),x=A/max,y=B/max,exact=x*y,dep=pOut-pA*pB,err=pOut-exact,decoded=pOut*max*max;return{method,a,b,out,pA,pB,pOut,x,y,exact,dep,err,decoded,exactInt:A*B}}
+function benchmarkWidth(width,samples){
+  const rng=mulberry32(width===16?160016:320032),max=maxForBits(width),pairs=[],structured=[0,1,2,Math.floor(max*.01),Math.floor(max*.25),Math.floor(max*.5),Math.floor(max*.75),max-2,max-1,max];
+  for(const a of structured)for(const b of structured)pairs.push([a,b]);
+  for(let i=0;i<samples;i++)pairs.push([Math.floor(rng()*(max+1)),Math.floor(rng()*(max+1))]);
+  const rows=[];
+  for(const L of L_VALUES)for(const method of METHODS){
+    let mae=0,rmse=0,maxe=0,bias=0,depAbs=0;
+    for(const [A,B] of pairs){const r=singleRun(method,A,B,L,width);mae+=Math.abs(r.err);rmse+=r.err*r.err;maxe=Math.max(maxe,Math.abs(r.err));bias+=r.err;depAbs+=Math.abs(r.dep)}
+    const n=pairs.length;rows.push({SNG:method,L,MAE:mae/n,RMSE:Math.sqrt(rmse/n),Max_Error:maxe,Bias:bias/n,Dependence:depAbs/n,Samples:n})
+  }
+  benchmark[width]=rows;return rows
+}
+function rowsFor(w){return benchmark[w]||[]}
+function metricValue(r,m){return m==="Dependence"?r.Dependence:r[m]}
+function drawBar(canvas,labels,values,title){
+  const dpr=devicePixelRatio||1,rect=canvas.getBoundingClientRect(),w=Math.max(600,rect.width),h=canvas.clientHeight||300;canvas.width=w*dpr;canvas.height=h*dpr;const c=canvas.getContext("2d");c.scale(dpr,dpr);c.clearRect(0,0,w,h);const m={l:60,r:22,t:35,b:55},pw=w-m.l-m.r,ph=h-m.t-m.b,max=Math.max(...values.map(v=>Math.abs(v)),1e-12)*1.15;c.font="12px system-ui";c.fillStyle="#17202a";c.fillText(title,m.l,20);c.strokeStyle="#e2e6ed";for(let i=0;i<=4;i++){const y=m.t+ph*i/4;c.beginPath();c.moveTo(m.l,y);c.lineTo(w-m.r,y);c.stroke();c.fillStyle="#687385";c.fillText((max*(1-i/4)).toExponential(2),5,y+4)}const gw=pw/labels.length;labels.forEach((lab,i)=>{const bh=values[i]/max*ph,bx=m.l+i*gw+gw*.18,bw=gw*.64;c.fillStyle=["#315efb","#d97706","#16855b","#7c3aed"][i%4];c.fillRect(bx,h-m.b-bh,bw,bh);c.fillStyle="#17202a";c.textAlign="center";c.fillText(lab,bx+bw/2,h-18);c.fillText(values[i].toExponential(2),bx+bw/2,h-m.b-bh-7);c.textAlign="left"})}
+function drawLine(canvas,xs,series,title,yLabel,logY){
+  const dpr=devicePixelRatio||1,rect=canvas.getBoundingClientRect(),w=Math.max(650,rect.width),h=canvas.clientHeight||330;canvas.width=w*dpr;canvas.height=h*dpr;const c=canvas.getContext("2d");c.scale(dpr,dpr);c.clearRect(0,0,w,h);const m={l:65,r:25,t:38,b:48},pw=w-m.l-m.r,ph=h-m.t-m.b;let vals=series.flatMap(s=>s.values).filter(v=>Number.isFinite(v));if(logY)vals=vals.filter(v=>v>0);let ymin,ymax;if(logY){ymin=Math.log10(Math.min(...vals));ymax=Math.log10(Math.max(...vals));if(ymin===ymax){ymin-=1;ymax+=1}ymin-=.12*(ymax-ymin);ymax+=.12*(ymax-ymin)}else{ymin=Math.min(0,...vals);ymax=Math.max(...vals);if(ymax===ymin)ymax=1;ymax*=1.12}const xmin=Math.log2(Math.min(...xs)),xmax=Math.log2(Math.max(...xs)),xp=x=>m.l+(Math.log2(x)-xmin)/(xmax-xmin)*pw,yp=v=>logY?m.t+(ymax-Math.log10(v))/(ymax-ymin)*ph:h-m.b-(v-ymin)/(ymax-ymin)*ph;c.font="12px system-ui";c.fillStyle="#17202a";c.fillText(title,m.l,20);c.strokeStyle="#e2e6ed";for(let i=0;i<=5;i++){const y=m.t+ph*i/5;c.beginPath();c.moveTo(m.l,y);c.lineTo(w-m.r,y);c.stroke()}xs.forEach(x=>{const xx=xp(x);c.strokeStyle="#edf0f4";c.beginPath();c.moveTo(xx,m.t);c.lineTo(xx,h-m.b);c.stroke();c.fillStyle="#687385";c.textAlign="center";c.fillText(String(x),xx,h-25)});c.textAlign="left";series.forEach((s,si)=>{const col=["#315efb","#d97706","#16855b","#7c3aed","#b7791f"][si%5];c.strokeStyle=col;c.lineWidth=2.5;c.beginPath();s.values.forEach((v,i)=>{const xx=xp(xs[i]),yy=yp(v);i?c.lineTo(xx,yy):c.moveTo(xx,yy)});c.stroke();s.values.forEach((v,i)=>{const xx=xp(xs[i]),yy=yp(v);c.fillStyle=col;c.beginPath();c.arc(xx,yy,4,0,2*Math.PI);c.fill()});const lx=w-m.r-120,ly=14+si*15;c.fillStyle=col;c.fillRect(lx,ly,10,10);c.fillStyle="#17202a";c.fillText(s.name,lx+15,ly+9)});c.save();c.translate(14,m.t+ph/2);c.rotate(-Math.PI/2);c.fillStyle="#687385";c.fillText(yLabel,0,0);c.restore()}
+function populateMetricSelect(id){const e=$(id);e.innerHTML="";[["MAE","MAE"],["RMSE","RMSE"],["Max_Error","Maximum error"],["Bias","Bias"],["Dependence","Mean |dependence error|"]].forEach(x=>{const o=document.createElement("option");o.value=x[0];o.textContent=x[1];e.appendChild(o)})}
+function renderBaseline(){ $("baselineTable").innerHTML=DATA8.map(r=>`<tr><td>${r.SNG}</td><td>${r.L}</td><td>${r.MAE.toFixed(6)}</td><td>${r.RMSE.toFixed(6)}</td><td>${r.Max_Error.toFixed(6)}</td><td>${r.Bias.toFixed(6)}</td><td>${r.Dependence.toFixed(6)}</td><td>${r.Representation.toFixed(6)}</td><td>${r.Decoded_MAE.toFixed(2)}</td></tr>`).join("")}
+function renderSameL(){const w=+$("sameLWidth").value,L=+$("sameL").value,m=$("sameLMetric").value,rows=rowsFor(w).filter(r=>r.L===L);if(!rows.length){drawBar($("sameLChart"),METHODS,[0,0,0,0],"Run a benchmark for this width first");return}drawBar($("sameLChart"),rows.map(r=>r.SNG),rows.map(r=>metricValue(r,m)),`Width ${w}-bit • L=${L} • ${m}`)}
+function renderSameMethod(){const w=+$("sameMethodWidth").value,method=$("sameMethod").value,m=$("sameMethodMetric").value,rows=rowsFor(w).filter(r=>r.SNG===method);if(!rows.length)return;drawLine($("sameMethodChart"),rows.map(r=>r.L),[{name:method,values:rows.map(r=>metricValue(r,m))}],`Width ${w}-bit • ${method} • ${m}`,m,true)}
+function renderPrecision(){const L=+$("precisionL").value,m=$("precisionMetric").value,labels=[],vals=[];for(const w of [8,16,32]){const r=rowsFor(w).find(x=>x.L===L&&x.SNG==="LFSR");if(r){labels.push(w+"-bit");vals.push(metricValue(r,m))}}if(!vals.length){drawBar($("precisionChart"),["8-bit","16-bit","32-bit"],[0,0,0],"Run 16/32-bit benchmarks to populate this view");return}drawBar($("precisionChart"),labels,vals,`L=${L} • LFSR • ${m} across precision`)}
+function renderSingle(){
+  const w=+$("width").value,L=+$("L").value,max=maxForBits(w);let A=clamp(+$("A").value,0,max),B=clamp(+$("B").value,0,max);$("A").value=A;$("B").value=B;const rs=METHODS.map(m=>singleRun(m,A,B,L,w));
+  $("singleHeroes").innerHTML=rs.map(r=>`<div class="hero"><div class="small">${r.method} • ${w}-bit • L=${L}</div><div class="big">${fmtInt(r.decoded)}</div><div class="small">decoded product • exact = ${fmtInt(r.exactInt)} • normalized error = ${r.err>=0?"+":""}${r.err.toFixed(6)}</div></div>`).join("");
+  $("singleTable").innerHTML=rs.map(r=>`<tr><td><strong>${r.method}</strong></td><td>${pct(r.pA)}</td><td>${pct(r.pB)}</td><td>${pct(r.pOut)}</td><td>${r.exact.toFixed(8)}</td><td>${r.err>=0?"+":""}${r.err.toFixed(8)}</td><td>${fmtInt(r.decoded)}</td><td>${r.dep>=0?"+":""}${r.dep.toFixed(8)}</td></tr>`).join("");
+  $("streamGrid").innerHTML=rs.map(r=>{const lim=Math.min(64,L),bits=a=>a.slice(0,lim).map(b=>`<span class="bit${b?" one":""}">${b}</span>`).join("");return `<div class="stream-card"><div class="stream-head"><strong>${r.method}</strong><span class="note">pAND=${pct(r.pOut)}</span></div><div class="note">A</div><div class="bits">${bits(r.a)}</div><div class="note" style="margin-top:6px">B</div><div class="bits">${bits(r.b)}</div><div class="note" style="margin-top:6px">AND</div><div class="bits">${r.out.slice(0,lim).map(b=>`<span class="bit${b?" out":""}">${b}</span>`).join("")}</div></div>`}).join("")
+}
+function init(){["sameLMetric","sameMethodMetric","precisionMetric"].forEach(populateMetricSelect);for(const L of L_VALUES){let o=document.createElement("option");o.value=L;o.textContent=L;$("sameL").appendChild(o);o=document.createElement("option");o.value=L;o.textContent=L;$("precisionL").appendChild(o)}$("sameL").value=32;$("precisionL").value=32}
+$("width").addEventListener("change",()=>{setInputRange();renderSingle()});$("L").addEventListener("change",renderSingle);$("runSingle").addEventListener("click",renderSingle);
+$("load8").addEventListener("click",()=>{benchmark[8]=DATA8.slice();$("width").value="8";setInputRange();renderSingle();setStatus("Loaded the notebook's exact 8-bit exhaustive dataset.");renderSameL();renderSameMethod();renderPrecision()});
+$("runBenchmark").addEventListener("click",()=>{const w=+$("width").value;if(w===8){setStatus("8-bit uses the completed exhaustive 256 × 256 notebook results.");benchmark[8]=DATA8.slice();renderSameL();renderSameMethod();renderPrecision();return}const s=+$("samples").value;setStatus(`Running ${s.toLocaleString()} sampled operand pairs for ${w}-bit...`);setTimeout(()=>{const rows=benchmarkWidth(w,s);setStatus(`${w}-bit benchmark complete: ${rows[0].Samples.toLocaleString()} structured/random operand pairs per method and L.`);renderSameL();renderSameMethod();renderPrecision()},30)});
+$("reset").addEventListener("click",()=>{$("width").value="8";$("L").value="32";$("A").value="170";$("B").value="150";setInputRange();renderSingle();setStatus("Reset to the 8-bit notebook baseline.");renderSameL();renderSameMethod();renderPrecision()});
+["sameL","sameLWidth","sameLMetric"].forEach(id=>$(id).addEventListener("change",renderSameL));["sameMethod","sameMethodWidth","sameMethodMetric"].forEach(id=>$(id).addEventListener("change",renderSameMethod));["precisionL","precisionMetric"].forEach(id=>$(id).addEventListener("change",renderPrecision));
+init();renderBaseline();setInputRange();renderSingle();renderSameL();renderSameMethod();renderPrecision();window.addEventListener("resize",()=>{renderSameL();renderSameMethod();renderPrecision()});
+})();
+</script>
+</body>
+</html>
