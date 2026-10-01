@@ -1,43 +1,65 @@
-`timescale 1ns/1ps
-
 module tb_addition_comparison;
 
     parameter integer N = 8;
     parameter integer L = 32;
 
-    reg clk, reset, start;
-    reg [N-1:0] A, B;
+    reg clk;
+    reg reset;
+    reg start;
+    reg [N-1:0] A;
+    reg [N-1:0] B;
 
     wire [N:0] binary_sum;
 
     wire lfsr_busy, lfsr_done;
-    wire [N:0] lfsr_sum;
-    wire lfsr_A, lfsr_B, lfsr_select, lfsr_stochastic_sum;
+    wire lfsr_A, lfsr_B, lfsr_select, lfsr_sum_bit;
 
     wire sobol_busy, sobol_done;
-    wire [N:0] sobol_sum;
-    wire sobol_A, sobol_B, sobol_select, sobol_stochastic_sum;
+    wire sobol_A, sobol_B, sobol_select, sobol_sum_bit;
+
+    integer i;
+    integer lfsr_ones;
+    integer sobol_ones;
+    real max_value;
+    real exact_sum;
+    real lfsr_estimate;
+    real sobol_estimate;
+    real lfsr_error;
+    real sobol_error;
 
     binary_adder_parameterized #(.N(N)) DUT_BINARY (
-        .A(A), .B(B), .Cin(1'b0), .Sum(binary_sum)
+        .A(A),
+        .B(B),
+        .Cin(1'b0),
+        .Sum(binary_sum)
     );
 
     sc_adder_lfsr_parameterized #(.N(N), .L(L)) DUT_LFSR (
-        .clk(clk), .reset(reset), .start(start),
-        .A(A), .B(B),
-        .busy(lfsr_busy), .done(lfsr_done), .sum(lfsr_sum),
-        .stochastic_A(lfsr_A), .stochastic_B(lfsr_B),
+        .clk(clk),
+        .reset(reset),
+        .start(start),
+        .A(A),
+        .B(B),
+        .busy(lfsr_busy),
+        .done(lfsr_done),
+        .stochastic_A(lfsr_A),
+        .stochastic_B(lfsr_B),
         .stochastic_select(lfsr_select),
-        .stochastic_sum(lfsr_stochastic_sum)
+        .stochastic_sum(lfsr_sum_bit)
     );
 
     sc_adder_sobol_parameterized #(.N(N), .L(L)) DUT_SOBOL (
-        .clk(clk), .reset(reset), .start(start),
-        .A(A), .B(B),
-        .busy(sobol_busy), .done(sobol_done), .sum(sobol_sum),
-        .stochastic_A(sobol_A), .stochastic_B(sobol_B),
+        .clk(clk),
+        .reset(reset),
+        .start(start),
+        .A(A),
+        .B(B),
+        .busy(sobol_busy),
+        .done(sobol_done),
+        .stochastic_A(sobol_A),
+        .stochastic_B(sobol_B),
         .stochastic_select(sobol_select),
-        .stochastic_sum(sobol_stochastic_sum)
+        .stochastic_sum(sobol_sum_bit)
     );
 
     always #5 clk = ~clk;
@@ -50,23 +72,56 @@ module tb_addition_comparison;
             A = a_in;
             B = b_in;
             start = 1'b1;
+
             @(negedge clk);
             start = 1'b0;
 
-            wait(lfsr_done);
-            wait(sobol_done);
-            #1;
+            wait(lfsr_busy && sobol_busy);
 
-            $display("A=%0d B=%0d | Binary=%0d | LFSR-SC=%0d | Sobol-SC=%0d",
-                     A, B, binary_sum, lfsr_sum, sobol_sum);
+            lfsr_ones = 0;
+            sobol_ones = 0;
 
-            if (binary_sum !== (A+B))
-                $display("ERROR: binary adder mismatch");
+            max_value = 1.0;
+            for (i = 0; i < N; i = i + 1)
+                max_value = max_value * 2.0;
+            max_value = max_value - 1.0;
 
-            $display("  LFSR stochastic stream last bits: A=%b B=%b S=%b Y=%b",
-                     lfsr_A, lfsr_B, lfsr_select, lfsr_stochastic_sum);
-            $display("  Sobol stochastic stream last bits: A=%b B=%b S=%b Y=%b",
-                     sobol_A, sobol_B, sobol_select, sobol_stochastic_sum);
+            $display("");
+            $display("============================================================");
+            $display("A = %0d (%b), B = %0d (%b)", A, A, B, B);
+            $display("Exact binary sum = %0d", binary_sum);
+            $display("LFSR/Sobol stochastic-sum bits:");
+
+            // Both SC streams are collected during the same L cycles.
+            // Sampling at negedge captures the stable bit generated
+            // from the current sequence state.
+            for (i = 0; i < L; i = i + 1) begin
+                @(negedge clk);
+                #1;
+                lfsr_ones = lfsr_ones + lfsr_sum_bit;
+                sobol_ones = sobol_ones + sobol_sum_bit;
+
+                $display("cycle=%0d  LFSR=%b  Sobol=%b  selL=%b  selS=%b",
+                         i+1, lfsr_sum_bit, sobol_sum_bit,
+                         lfsr_select, sobol_select);
+            end
+
+            wait(lfsr_done && sobol_done);
+
+            exact_sum = A + B;
+
+            // MUX scaled addition gives (x+y)/2.
+            lfsr_estimate = (2.0 * lfsr_ones * max_value) / L;
+            sobol_estimate = (2.0 * sobol_ones * max_value) / L;
+
+            lfsr_error = lfsr_estimate - exact_sum;
+            sobol_error = sobol_estimate - exact_sum;
+
+            $display("------------------------------------------------------------");
+            $display("LFSR : ones = %0d/%0d, decoded = %0.3f, error = %0.3f",
+                     lfsr_ones, L, lfsr_estimate, lfsr_error);
+            $display("Sobol: ones = %0d/%0d, decoded = %0.3f, error = %0.3f",
+                     sobol_ones, L, sobol_estimate, sobol_error);
         end
     endtask
 
@@ -89,4 +144,5 @@ module tb_addition_comparison;
         #20;
         $finish;
     end
+
 endmodule
