@@ -3,7 +3,7 @@ module comparator_structural #(
 )(
     input  wire [N-1:0] a,
     input  wire [N-1:0] b,
-    output wire         a_lt_b
+    output wire         a_le_b
 );
     wire [N:0] equal;
     wire [N:0] less;
@@ -28,5 +28,6 @@ module comparator_structural #(
         end
     endgenerate
 
-    assign a_lt_b = less[0];
+    // a <= b = (a < b) OR (a == b)
+    or (a_le_b, less[0], equal[0]);
 endmodule
