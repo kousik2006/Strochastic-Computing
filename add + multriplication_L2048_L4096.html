@@ -144,7 +144,7 @@ canvas{height:290px}.small-canvas{height:250px}
 <h2>1. Simulation configuration</h2>
 <div class="controls">
 <div><label>Input width</label><select id="width"><option value="8" selected>8-bit</option><option value="16">16-bit</option><option value="32">32-bit</option></select></div>
-<div><label>Stream length</label><select id="L"><option>16</option><option selected>32</option><option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option></select></div>
+<div><label>Stream length</label><select id="L"><option>16</option><option selected>32</option><option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option><option>2048</option><option>4096</option></select></div>
 <div><label>Input A</label><input id="A" type="number" value="170" min="0" max="255"></div>
 <div><label>Input B</label><input id="B" type="number" value="150" min="0" max="255"></div>
 <div><label>Benchmark samples</label><select id="samples"><option value="512">512</option><option value="2048" selected>2,048</option><option value="8192">8,192</option></select></div>
@@ -156,7 +156,7 @@ canvas{height:290px}.small-canvas{height:250px}
 <div class="note" style="margin-bottom:10px">
 For <strong>8-bit</strong>, the notebook Investigation candidate pool is loaded exactly:
 P1/P2/P3 with the nine seeds used in the exhaustive 36-pair search. The current multiplication experiment fixes P2-198 for A and P2-86 for B at every L.
-For <strong>16/32-bit</strong>, choose different primitive-polynomial presets or enter custom taps and independent seeds.
+For <strong>16/32-bit inputs</strong>, you can now choose an <strong>8-, 12-, 16-, or 32-bit LFSR order</strong> independently for A and B. Higher order is recommended for long streams because an 8-bit maximal sequence has only 255 non-zero states.
 The live LFSR always uses <strong>state ≤ input</strong>, matching the notebook.
 </div>
 <div class="method" style="margin-bottom:12px;background:#f5f8ff;border-color:#cfd9ff">
@@ -171,7 +171,7 @@ The live LFSR always uses <strong>state ≤ input</strong>, matching the noteboo
 <div class="method">
 <div class="method-head"><div class="method-name">Stream A</div><span class="pill">Independent</span></div>
 <div class="controls" style="grid-template-columns:1fr 1fr">
-<div><label>Polynomial / preset</label><select id="polyA"></select></div>
+<div><label>LFSR order</label><select id="orderA"><option value="8">8-bit</option><option value="12">12-bit</option><option value="16">16-bit</option><option value="32">32-bit</option></select></div><div><label>Polynomial / preset</label><select id="polyA"></select></div>
 <div><label>Seed</label><input id="seedA" type="number" min="1" value="198" list="seedListA"></div>
 <div style="grid-column:1 / -1"><label>Custom taps</label><input id="tapsA" type="text" placeholder="e.g. 15,13,12,10"></div>
 </div>
@@ -181,7 +181,7 @@ The live LFSR always uses <strong>state ≤ input</strong>, matching the noteboo
 <div class="method">
 <div class="method-head"><div class="method-name">Stream B</div><span class="pill">Independent</span></div>
 <div class="controls" style="grid-template-columns:1fr 1fr">
-<div><label>Polynomial / preset</label><select id="polyB"></select></div>
+<div><label>LFSR order</label><select id="orderB"><option value="8">8-bit</option><option value="12">12-bit</option><option value="16">16-bit</option><option value="32">32-bit</option></select></div><div><label>Polynomial / preset</label><select id="polyB"></select></div>
 <div><label>Seed</label><input id="seedB" type="number" min="1" value="86" list="seedListB"></div>
 <div style="grid-column:1 / -1"><label>Custom taps</label><input id="tapsB" type="text" placeholder="e.g. 15,13,12,10"></div>
 </div>
@@ -214,7 +214,7 @@ The live LFSR always uses <strong>state ≤ input</strong>, matching the noteboo
 <div class="method-grid">
 <div class="method"><div class="method-head"><div class="method-name">LFSR</div><span class="pill">Verified</span></div><div class="mini">8-bit reproduces the notebook Fibonacci-style state sequence and comparator convention. 16/32-bit use the same recurrence with width-appropriate presets and independently controlled non-zero seeds for A and B.</div></div>
 <div class="method"><div class="method-head"><div class="method-name">RAMP</div><span class="pill">Verified</span></div><div class="mini">Uses the notebook construction r(i)=i/L and compares it with value/(2<sup>N</sup>−1). A and B intentionally share the same ramp, so correlation/dependence is measurable.</div></div>
-<div class="method"><div class="method-head"><div class="method-name">ED</div><span class="pill warn">8-bit notebook-faithful</span></div><div class="mini">8-bit is the exact notebook B=1, V=16, K=4 implementation, including seeds 42/43 and its generated 1024-bit sequences. 16/32-bit are explicitly a scalable even-distribution software model because the notebook does not define a 16/32-bit ED hardware architecture.</div></div>
+<div class="method"><div class="method-head"><div class="method-name">ED</div><span class="pill warn">8-bit notebook-faithful</span></div><div class="mini">8-bit is the exact notebook B=1, V=16, K=4 implementation, including seeds 42/43 and its generated 1024-bit sequences; for L>1024 the simulator uses the scalable even-distribution model. 16/32-bit are explicitly a scalable even-distribution software model because the notebook does not define a 16/32-bit ED hardware architecture.</div></div>
 <div class="method"><div class="method-head"><div class="method-name">Sobol</div><span class="pill">Notebook-derived</span></div><div class="mini">Uses the notebook's first-dimension Sobol sequence, the same 32-bit direction numbers, and A/B phase offsets 0/1. For 16/32-bit, the same sequence is thresholded at the selected N-bit precision.</div></div>
 </div>
 <div style="height:10px"></div>
@@ -235,7 +235,7 @@ The live LFSR always uses <strong>state ≤ input</strong>, matching the noteboo
 
 <div class="card">
 <h2>3A. Input-pair convergence across stream length</h2>
-<div class="note" style="margin-bottom:10px">For the current user-selected A and B, this is the main visual comparison: the horizontal <strong>Actual A × B</strong> line is the exact integer product, while each colored curve is the decoded stochastic multiplier result for the same method as L changes from 16 to 1024. Points closer to the actual line mean smaller product error. The plot uses the same SNG functions and A/B configurations as the single-input simulator above.</div>
+<div class="note" style="margin-bottom:10px">For the current user-selected A and B, this is the main visual comparison: the horizontal <strong>Actual A × B</strong> line is the exact integer product, while each colored curve is the decoded stochastic multiplier result for the same method as L changes from 16 to 4096. Points closer to the actual line mean smaller product error. The plot uses the same SNG functions and A/B configurations as the single-input simulator above.</div>
 <div class="chart-box">
 <canvas id="pairConvergenceChart"></canvas>
 <div class="legend">Y-axis: decoded product in the original integer product scale. X-axis: stochastic stream length L. LFSR uses the current P2-198 × P2-86 notebook configuration in 8-bit mode; ED/Sobol/RAMP use the same logic as the simulator.</div>
@@ -244,7 +244,7 @@ The live LFSR always uses <strong>state ≤ input</strong>, matching the noteboo
 
 <div class="card">
 <h2>4. Generated stochastic streams — all cycles</h2>
-<div class="note" style="margin-bottom:10px">All L stochastic bits are generated and displayed for A, B, and A AND B. For every stream, the simulator shows both the <strong>generated percentage of 1s</strong> and the <strong>expected percentage of 1s</strong> implied by the exact input/product. The boxes are vertically scrollable, so L=1024 remains readable.</div>
+<div class="note" style="margin-bottom:10px">All L stochastic bits are generated and displayed for A, B, and A AND B. For every stream, the simulator shows both the <strong>generated percentage of 1s</strong> and the <strong>expected percentage of 1s</strong> implied by the exact input/product. The boxes are vertically scrollable, so L=4096 remains readable.</div>
 <div class="stream-grid" id="streamGrid"></div>
 </div>
 
@@ -261,7 +261,7 @@ The live LFSR always uses <strong>state ≤ input</strong>, matching the noteboo
 <h3>Same SNG → compare different stream lengths</h3>
 <div class="chart-toolbar"><div><label>Method</label><select id="sameMethod"><option>LFSR</option><option>RAMP</option><option>ED</option><option>Sobol</option></select></div><div><label>Width</label><select id="sameMethodWidth"><option>8</option><option>16</option><option>32</option></select></div><div><label>Metric</label><select id="sameMethodMetric"></select></div></div>
 <canvas id="sameMethodChart" class="small-canvas"></canvas>
-<div class="legend">The x-axis is logarithmic because L doubles from 16 to 1024. If the selected N-bit inputs are tiny compared with 2<sup>N</sup>−1, several short streams can legitimately contain zero 1s; use the finite-stream resolution check above.</div>
+<div class="legend">The x-axis is logarithmic because L doubles from 16 to 4096. If the selected N-bit inputs are tiny compared with 2<sup>N</sup>−1, several short streams can legitimately contain zero 1s; use the finite-stream resolution check above.</div>
 </div>
 </div>
 </div>
@@ -301,7 +301,7 @@ Percentage error: 100 × (SC_result - exact_product) / exact_product (0 when exa
 <div class="card"><h2>1. Stochastic Addition — Simulation Configuration</h2>
 <div class="controls">
 <div><label>Input width</label><select id="addWidth"><option value="8" selected>8-bit</option><option value="16">16-bit</option><option value="32">32-bit</option></select></div>
-<div><label>Stream length</label><select id="addL"><option>16</option><option selected>32</option><option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option></select></div>
+<div><label>Stream length</label><select id="addL"><option>16</option><option selected>32</option><option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option><option>2048</option><option>4096</option></select></div>
 <div><label>Input A</label><input id="addA" type="number" value="45" min="0" max="255"></div>
 <div><label>Input B</label><input id="addB" type="number" value="156" min="0" max="255"></div>
 <div><label>Architecture</label><select id="addArch"><option value="both" selected>Compare MUX × 2 and OR</option><option value="mux">MUX × 2 only</option><option value="or">OR only</option></select></div>
@@ -311,12 +311,12 @@ Percentage error: 100 × (SC_result - exact_product) / exact_product (0 when exa
 <div class="actions"><button id="addRun">Run addition comparison</button><button id="addReset" class="ghost">Reset</button><button id="addCopyMulLfsr" class="secondary">Copy multiplication LFSR settings</button></div>
 </div>
 <div class="card"><h2>1A. LFSR Configuration — Independent A / B</h2>
-<div class="note" style="margin-bottom:12px">A and B have independent LFSR polynomial/seed settings, exactly like the multiplication side. For 8-bit mode the default is <strong>P2</strong> with A seed <strong>198</strong> and B seed <strong>86</strong>. Changing A does not change B.</div>
+<div class="note" style="margin-bottom:12px">A and B have independent LFSR order, polynomial, and seed settings. You can keep the original 8-bit LFSR or select 12/16/32-bit higher-order LFSRs. For 8-bit mode the default is <strong>P2</strong> with A seed <strong>198</strong> and B seed <strong>86</strong>. Changing A does not change B.</div>
 <div class="grid2">
 <div class="method"><div class="method-head"><div class="method-name">Stream A LFSR</div><span class="pill">Independent</span></div>
-<div class="controls"><div><label>Polynomial</label><select id="addPolyA"></select></div><div><label>Seed</label><input id="addSeedA" type="number" min="1" value="198"></div><div style="grid-column:1/-1"><label>Custom taps</label><input id="addTapsA" type="text" value="7,5,4,1"></div></div><div class="poly-info" id="addPolyInfoA"></div></div>
+<div class="controls"><div><label>LFSR order</label><select id="addOrderA"><option value="8">8-bit</option><option value="12">12-bit</option><option value="16">16-bit</option><option value="32">32-bit</option></select></div><div><label>Polynomial</label><select id="addPolyA"></select></div><div><label>Seed</label><input id="addSeedA" type="number" min="1" value="198"></div><div style="grid-column:1/-1"><label>Custom taps</label><input id="addTapsA" type="text" value="7,5,4,1"></div></div><div class="poly-info" id="addPolyInfoA"></div></div>
 <div class="method"><div class="method-head"><div class="method-name">Stream B LFSR</div><span class="pill">Independent</span></div>
-<div class="controls"><div><label>Polynomial</label><select id="addPolyB"></select></div><div><label>Seed</label><input id="addSeedB" type="number" min="1" value="86"></div><div style="grid-column:1/-1"><label>Custom taps</label><input id="addTapsB" type="text" value="7,5,4,1"></div></div><div class="poly-info" id="addPolyInfoB"></div></div>
+<div class="controls"><div><label>LFSR order</label><select id="addOrderB"><option value="8">8-bit</option><option value="12">12-bit</option><option value="16">16-bit</option><option value="32">32-bit</option></select></div><div><label>Polynomial</label><select id="addPolyB"></select></div><div><label>Seed</label><input id="addSeedB" type="number" min="1" value="86"></div><div style="grid-column:1/-1"><label>Custom taps</label><input id="addTapsB" type="text" value="7,5,4,1"></div></div><div class="poly-info" id="addPolyInfoB"></div></div>
 </div>
 <div class="note" style="margin-top:12px"><strong>Why independent seeds?</strong> A and B are separate stochastic streams. Keeping independent seeds avoids accidentally forcing the two operands to use the same LFSR phase/sequence. The MUX select line remains deterministic and is not generated by the SNG.</div>
 </div>
@@ -336,7 +336,7 @@ Percentage error: 100 × (SC_result - exact_product) / exact_product (0 when exa
 </div></div>
 <div class="card"><h2>4. Generated Stochastic Streams — All Cycles</h2><div class="note" style="margin-bottom:10px">For every SNG (LFSR, ED, Sobol), A, B, MUX, and OR streams are shown with generated and expected 1-density. The deterministic MUX select line is also displayed.</div><div class="stream-grid" id="addStreamGrid"></div></div>
 <div class="card"><h2>5. Addition Benchmark — 256 × 256 Input Space</h2>
-<div class="controls"><div><label>Stream length</label><select id="addBenchL"><option>16</option><option selected>32</option><option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option></select></div><div><label>Metric</label><select id="addBenchMetric"><option value="mae" selected>MAE</option><option value="rmse">RMSE</option><option value="max">Maximum error</option><option value="bias">Bias</option></select></div></div>
+<div class="controls"><div><label>Stream length</label><select id="addBenchL"><option>16</option><option selected>32</option><option>64</option><option>128</option><option>256</option><option>512</option><option>1024</option><option>2048</option><option>4096</option></select></div><div><label>Metric</label><select id="addBenchMetric"><option value="mae" selected>MAE</option><option value="rmse">RMSE</option><option value="max">Maximum error</option><option value="bias">Bias</option></select></div></div>
 <div class="actions"><button id="addBenchmark">Run 256 × 256 exhaustive benchmark</button></div>
 <div class="grid2" style="margin-top:12px"><div class="chart-box"><h3>MUX × 2 benchmark</h3><canvas id="addMuxBenchmarkChart"></canvas></div><div class="chart-box"><h3>OR benchmark</h3><canvas id="addOrBenchmarkChart"></canvas></div></div>
 <div class="note" id="addBenchStatus">Benchmark not run yet — the charts will populate after the benchmark is started.</div></div>
@@ -349,7 +349,7 @@ Percentage error: 100 × (SC_result - exact_product) / exact_product (0 when exa
 (() => {
 "use strict";
 
-const L_VALUES=[16,32,64,128,256,512,1024];
+const L_VALUES=[16,32,64,128,256,512,1024,2048,4096];
 const METHODS=["LFSR","RAMP","ED","Sobol"];
 const ADD_METHODS=["LFSR","ED","Sobol"];
 const METRICS=["MAE","RMSE","Max_Error","Bias","Dependence"];
@@ -380,13 +380,17 @@ const PRESETS = {
     P2: {taps:[7,5,4,1], poly:"x^8 + x^6 + x^5 + x^2 + 1", label:"Notebook P2"},
     P3: {taps:[7,6,1,0], poly:"x^8 + x^7 + x^2 + x + 1", label:"Notebook P3"}
   },
+  12: {
+    P12A: {taps:[11,10,9,3], poly:"x^12 + x^11 + x^10 + x^4 + 1", label:"12-bit higher-order preset A"},
+    P12B: {taps:[11,5,3,0], poly:"x^12 + x^6 + x^4 + x + 1", label:"12-bit higher-order preset B"}
+  },
   16: {
-    P16A: {taps:[15,13,12,10], poly:"x^16 + x^14 + x^13 + x^11 + 1", label:"16-bit primitive preset A"},
-    P16B: {taps:[15,11,2,0], poly:"x^16 + x^12 + x^3 + x + 1", label:"16-bit primitive preset B"}
+    P16A: {taps:[15,13,12,10], poly:"x^16 + x^14 + x^13 + x^11 + 1", label:"16-bit higher-order preset A"},
+    P16B: {taps:[15,11,2,0], poly:"x^16 + x^12 + x^3 + x + 1", label:"16-bit higher-order preset B"}
   },
   32: {
-    P32A: {taps:[31,21,1,0], poly:"x^32 + x^22 + x^2 + x + 1", label:"32-bit primitive preset A"},
-    P32B: {taps:[31,14,8,6,3,2,0], poly:"x^32 + x^15 + x^9 + x^7 + x^4 + x^3 + 1", label:"32-bit primitive preset B"}
+    P32A: {taps:[31,21,1,0], poly:"x^32 + x^22 + x^2 + x + 1", label:"32-bit higher-order preset A"},
+    P32B: {taps:[31,14,8,6,3,2,0], poly:"x^32 + x^15 + x^9 + x^7 + x^4 + x^3 + 1", label:"32-bit higher-order preset B"}
   }
 };
 
@@ -424,14 +428,19 @@ function populateSeedList(op){
   }
 }
 
-function presetOptions(width){
-  if(width===8) return [
-    ["P1","P1 — [7,5,4,3]"],
-    ["P2","P2 — [7,5,4,1]"],
-    ["P3","P3 — [7,6,1,0]"],
+function presetOptions(order){
+  if(order===8) return [
+    ["P1","P1 — [7,5,4,3] (notebook)"],
+    ["P2","P2 — [7,5,4,1] (notebook)"],
+    ["P3","P3 — [7,6,1,0] (notebook)"],
     ["CUSTOM","Custom taps"]
   ];
-  if(width===16) return [
+  if(order===12) return [
+    ["P12A","P12-A — x^12+x^11+x^10+x^4+1"],
+    ["P12B","P12-B — x^12+x^6+x^4+x+1"],
+    ["CUSTOM","Custom taps"]
+  ];
+  if(order===16) return [
     ["P16A","P16-A — x^16+x^14+x^13+x^11+1"],
     ["P16B","P16-B — x^16+x^12+x^3+x+1"],
     ["CUSTOM","Custom taps"]
@@ -464,23 +473,28 @@ function parseTaps(text,width){
   return [...new Set(vals)];
 }
 
+function lfsrOrderFor(op){
+  const el=$(op==="A"?"orderA":"orderB");
+  return el ? +el.value : currentWidth();
+}
+
 function configFor(op){
-  const width=currentWidth(), key=$(op==="A"?"polyA":"polyB").value;
+  const order=lfsrOrderFor(op), key=$(op==="A"?"polyA":"polyB").value;
   const seedEl=$(op==="A"?"seedA":"seedB"), tapsEl=$(op==="A"?"tapsA":"tapsB");
   let taps,poly,label;
   if(key==="CUSTOM"){
-    taps=parseTaps(tapsEl.value,width);
+    taps=parseTaps(tapsEl.value,order);
     poly=`custom taps [${taps.join(",")}]`;
-    label="Custom";
+    label=`Custom ${order}-bit`;
   } else {
-    const p=getPreset(width,key);
-    if(!p) throw new Error("Invalid LFSR preset.");
+    const p=getPreset(order,key);
+    if(!p) throw new Error("Invalid LFSR preset for "+order+"-bit order.");
     taps=p.taps.slice(); poly=p.poly; label=p.label;
     tapsEl.value=taps.join(",");
   }
   let seed=Number(seedEl.value);
-  if(!Number.isInteger(seed) || seed<=0 || seed>maxForBits(width)) throw new Error(`Seed ${op} must be an integer from 1 to ${maxForBits(width)}.`);
-  return {taps,seed,poly,label};
+  if(!Number.isInteger(seed) || seed<=0 || seed>maxForBits(order)) throw new Error(`Seed ${op} must be an integer from 1 to ${maxForBits(order)} for the selected ${order}-bit LFSR.`);
+  return {taps,seed,poly,label,order};
 }
 
 function polynomialFromTaps(width,taps){
@@ -493,43 +507,44 @@ function polynomialFromTaps(width,taps){
 function feedbackFromTaps(taps){
   return taps.slice().sort((a,b)=>b-a).map(t=>`s[${t}]`).join(" ⊕ ");
 }
-function renderPolyInfo(op,taps,width,label,custom=false){
+function renderPolyInfo(op,taps,order,label,custom=false){
   const info=$(op==="A"?"polyInfoA":"polyInfoB");
-  const poly=polynomialFromTaps(width,taps);
+  const poly=polynomialFromTaps(order,taps);
   const feedback=feedbackFromTaps(taps);
-  info.innerHTML=`<span class="poly-chip">Polynomial: ${poly}</span><span class="poly-chip">Highest order: x^${width}</span><span class="poly-chip">Taps: [${taps.join(",")}]</span><span class="poly-chip">Feedback: ${feedback}</span>`;
+  info.innerHTML=`<span class="poly-chip">Order: ${order}-bit</span><span class="poly-chip">Polynomial: ${poly}</span><span class="poly-chip">Taps: [${taps.join(",")}]</span><span class="poly-chip">Feedback: ${feedback}</span>`;
 }
 
 function updatePolyInfo(op){
-  const width=currentWidth(), key=$(op==="A"?"polyA":"polyB").value;
+  const order=lfsrOrderFor(op), key=$(op==="A"?"polyA":"polyB").value;
   const tapsEl=$(op==="A"?"tapsA":"tapsB");
-  const p=getPreset(width,key);
+  const p=getPreset(order,key);
   if(p){
     tapsEl.value=p.taps.join(",");
     tapsEl.disabled=true;
-    renderPolyInfo(op,p.taps,width,p.label,false);
+    renderPolyInfo(op,p.taps,order,p.label,false);
   } else {
     tapsEl.disabled=false;
     try{
-      const taps=parseTaps(tapsEl.value,width);
-      renderPolyInfo(op,taps,width,"Custom",true);
+      const taps=parseTaps(tapsEl.value,order);
+      renderPolyInfo(op,taps,order,"Custom",true);
     }catch(e){
-      $(op==="A"?"polyInfoA":"polyInfoB").innerHTML=`<span class="poly-chip">Custom polynomial: x^${width} + … + 1</span><span class="poly-chip">Enter taps 0–${width-1}</span>`;
+      $(op==="A"?"polyInfoA":"polyInfoB").innerHTML=`<span class="poly-chip">Custom ${order}-bit polynomial</span><span class="poly-chip">Enter taps 0–${order-1}</span>`;
     }
   }
   populateSeedList(op);
 }
 function updateCustomPolyLive(op){
-  const width=currentWidth(), key=$(op==="A"?"polyA":"polyB").value;
+  const order=lfsrOrderFor(op), key=$(op==="A"?"polyA":"polyB").value;
   if(key!=="CUSTOM") return;
   const tapsEl=$(op==="A"?"tapsA":"tapsB");
   try{
-    const taps=parseTaps(tapsEl.value,width);
-    renderPolyInfo(op,taps,width,"Custom",true);
+    const taps=parseTaps(tapsEl.value,order);
+    renderPolyInfo(op,taps,order,"Custom",true);
   }catch(e){
-    $(op==="A"?"polyInfoA":"polyInfoB").innerHTML=`<span class="poly-chip">Custom polynomial: x^${width} + … + 1</span><span class="poly-chip">Enter taps 0–${width-1}</span>`;
+    $(op==="A"?"polyInfoA":"polyInfoB").innerHTML=`<span class="poly-chip">Custom ${order}-bit polynomial</span><span class="poly-chip">Enter taps 0–${order-1}</span>`;
   }
 }
+
 function setInputRange(preserveNorm=true,oldWidth=null){
   const width=currentWidth(), max=maxForBits(width);
   const oldMax=oldWidth?maxForBits(oldWidth):maxForBits(width);
@@ -541,27 +556,41 @@ function setInputRange(preserveNorm=true,oldWidth=null){
   $("A").max=$("B").max=String(max);
   $("A").value=String(clamp(Math.round(a),0,max));
   $("B").value=String(clamp(Math.round(b),0,max));
-  $("seedA").max=$("seedB").max=String(max);
-  $("seedA").min=$("seedB").min="1";
+  setLfsrSeedLimits();
 }
 
 function loadWidthPresets(oldWidth){
   const width=currentWidth();
-  let keepA=$("polyA").value, keepB=$("polyB").value;
-  if(width===8){keepA="P2";keepB="P2";}
-  else if(width===16){keepA="P16A";keepB="P16B";}
-  else {keepA="P32A";keepB="P32B";}
-  populatePolySelect("A",keepA); populatePolySelect("B",keepB);
+  const defaultOrder=width===8?8:width;
+  $("orderA").value=String(defaultOrder); $("orderB").value=String(defaultOrder);
+  populatePolySelect("A",width===8?"P2":(width===16?"P16A":"P32A"));
+  populatePolySelect("B",width===8?"P2":(width===16?"P16B":"P32B"));
   if(width===8){
-    $("seedA").type="number"; $("seedB").type="number";
-    $("seedA").value=198;
-    $("seedB").value=86;
+    $("seedA").value=198; $("seedB").value=86;
   } else if(width===16){
     $("seedA").value="44257"; $("seedB").value="48879";
   } else {
     $("seedA").value="305419896"; $("seedB").value="2654435769";
   }
+  setLfsrSeedLimits();
   updatePolyInfo("A"); updatePolyInfo("B");
+}
+
+function populatePolySelect(op,preferred){
+  const e=$(op==="A"?"polyA":"polyB"), old=e.value, order=lfsrOrderFor(op);
+  e.innerHTML="";
+  for(const [v,t] of presetOptions(order)){const o=document.createElement("option");o.value=v;o.textContent=t;e.appendChild(o);}
+  if(preferred && [...e.options].some(o=>o.value===preferred)) e.value=preferred;
+  else if([...e.options].some(o=>o.value===old)) e.value=old;
+  else e.value=e.options[0].value;
+}
+
+function setLfsrSeedLimits(){
+  for(const op of ["A","B"]){
+    const order=lfsrOrderFor(op), el=$(op==="A"?"seedA":"seedB");
+    el.max=String(maxForBits(order)); el.min="1";
+    const v=Number(el.value); if(!Number.isInteger(v)||v<1||v>maxForBits(order)) el.value=String(Math.max(1,Math.floor(maxForBits(order)/3)));
+  }
 }
 
 function lfsrNext(state,taps,width){
@@ -579,12 +608,14 @@ function lfsrStates(seed,taps,width,L){
   return a;
 }
 
-function lfsrStream(value,L,width,op){
-  // op=0 -> Stream A, op=1 -> Stream B. configFor expects the literal "A"/"B".
-  const cfg=configFor(op===0?"A":"B");
-  const states=lfsrStates(cfg.seed,cfg.taps,width,L);
-  // EXACT notebook comparator: states <= input_value
-  return states.map(s=>s<=value?1:0);
+function lfsrStream(value,L,inputWidth,op){
+  // The LFSR order can be different from the input width. Map the input
+  // probability into the selected LFSR state space before thresholding.
+  const cfg=configFor(op===0?"A":"B"), order=cfg.order;
+  const states=lfsrStates(cfg.seed,cfg.taps,order,L);
+  const inputMax=maxForBits(inputWidth), lfsrMax=maxForBits(order);
+  const threshold=Math.round((value/inputMax)*lfsrMax);
+  return states.map(s=>s<=threshold?1:0);
 }
 
 function rampStream(value,L,width){
@@ -605,7 +636,9 @@ function ed8Bits(value,seed){
   for(let i=0;i<1024;i++){const byte=bin.charCodeAt(base+(i>>3));out[i]=(byte>>(7-(i&7)))&1;}
   return out;
 }
-function edStream8(value,L,seed){return ed8Bits(value,seed).slice(0,L);}
+function edStream8(value,L,seed){
+  return L<=1024 ? ed8Bits(value,seed).slice(0,L) : edStreamScalable(value,L,8,seed);
+}
 function edStreamScalable(value,L,width,seed){
   const max=maxForBits(width),out=new Array(L);let prev=0;
   for(let i=0;i<L;i++){const next=Math.floor(((i+1)*value)/max);out[i]=next-prev;prev=next;}
@@ -648,6 +681,24 @@ function singleRun(method,A,B,L,width){
   const exactInt=A*B;
   const absError=Math.abs(decoded-exactInt), signedPct=exactInt===0?0:(decoded-exactInt)/exactInt*100, absPct=exactInt===0?0:absError/exactInt*100;
   return {method,a,b,out,pA,pB,pOut,x,y,exact,dep,err,decoded,exactInt,absError,signedPct,absPct};
+}
+
+function benchmarkWidthAtL(width,samples,L){
+  const rng=mulberry32((width===8?8008:width===16?160016:320032)+L),max=maxForBits(width),pairs=[];
+  const structured=[0,1,2,Math.floor(max*.01),Math.floor(max*.25),Math.floor(max*.5),Math.floor(max*.75),max-2,max-1,max];
+  for(const a of structured)for(const b of structured)pairs.push([a,b]);
+  for(let i=0;i<samples;i++)pairs.push([Math.floor(rng()*(max+1)),Math.floor(rng()*(max+1))]);
+  const rows=[];
+  for(const method of METHODS){
+    let mae=0,rmse=0,maxe=0,bias=0,depAbs=0;
+    for(const [A,B] of pairs){
+      const r=singleRun(method,A,B,L,width);
+      mae+=Math.abs(r.err);rmse+=r.err*r.err;maxe=Math.max(maxe,Math.abs(r.err));bias+=r.err;depAbs+=Math.abs(r.dep);
+    }
+    const n=pairs.length;
+    rows.push({SNG:method,L,MAE:mae/n,RMSE:Math.sqrt(rmse/n),Max_Error:maxe,Bias:bias/n,Dependence:depAbs/n,Samples:n,Config:method});
+  }
+  benchmark[width]=rows;return rows;
 }
 
 function benchmarkWidth(width,samples){
@@ -833,23 +884,49 @@ function renderSingle(){
   }catch(e){setStatus("Configuration error: "+e.message);console.error(e);}
 }
 function addSelectStream(L){const s=new Array(L);for(let i=0;i<L;i++)s[i]=(i%2===0)?1:0;return s;}
-function addConfigFor(op){const width=+$('addWidth').value,key=$(op==='A'?'addPolyA':'addPolyB').value,seed=Number($(op==='A'?'addSeedA':'addSeedB').value),tapsEl=$(op==='A'?'addTapsA':'addTapsB');let taps,label;if(key==='CUSTOM'){taps=parseTaps(tapsEl.value,width);label='Custom';}else{const p=getPreset(width,key);if(!p)throw new Error('Invalid addition LFSR preset for '+op+'.');taps=p.taps.slice();label=p.label;tapsEl.value=taps.join(',');}if(!Number.isInteger(seed)||seed<=0||seed>maxForBits(width))throw new Error(`Addition LFSR seed ${op} must be an integer from 1 to ${maxForBits(width)}.`);return{taps,seed,label,key};}
-function populateAddPolySelect(op,preferred){const el=$(op==='A'?'addPolyA':'addPolyB'),old=el.value;el.innerHTML='';for(const[v,t]of presetOptions(+$('addWidth').value)){const o=document.createElement('option');o.value=v;o.textContent=t;el.appendChild(o);}if(preferred&&[...el.options].some(o=>o.value===preferred))el.value=preferred;else if([...el.options].some(o=>o.value===old))el.value=old;else el.value=el.options[0].value;}
-function updateAddPolyInfo(op){const width=+$('addWidth').value,key=$(op==='A'?'addPolyA':'addPolyB').value,tapsEl=$(op==='A'?'addTapsA':'addTapsB'),info=$(op==='A'?'addPolyInfoA':'addPolyInfoB');if(key==='CUSTOM'){tapsEl.disabled=false;try{const taps=parseTaps(tapsEl.value,width);info.innerHTML=`<span class="poly-chip">Polynomial: ${polynomialFromTaps(width,taps)}</span><span class="poly-chip">Taps: [${taps.join(',')}]</span><span class="poly-chip">Feedback: ${feedbackFromTaps(taps)}</span>`;}catch(e){info.innerHTML=`<span class="poly-chip">Custom taps: enter 0–${width-1}</span>`;}}else{const p=getPreset(width,key);tapsEl.disabled=true;tapsEl.value=p.taps.join(',');info.innerHTML=`<span class="poly-chip">Polynomial: ${polynomialFromTaps(width,p.taps)}</span><span class="poly-chip">Taps: [${p.taps.join(',')}]</span><span class="poly-chip">Feedback: ${feedbackFromTaps(p.taps)}</span>`;}}
-function setAddInputRange(){const width=+$('addWidth').value,max=maxForBits(width);$('addA').max=String(max);$('addB').max=String(max);$('addSeedA').max=String(max);$('addSeedB').max=String(max);$('addA').value=clamp(+$('addA').value,0,max);$('addB').value=clamp(+$('addB').value,0,max);if(+$('addSeedA').value>max)$('addSeedA').value=1;if(+$('addSeedB').value>max)$('addSeedB').value=1;}
-function addMakeStream(method,value,L,width,op){if(method==='LFSR'){const cfg=addConfigFor(op===0?'A':'B');return lfsrStates(cfg.seed,cfg.taps,width,L).map(st=>st<=value?1:0);}if(method==='ED')return width===8?edStream8(value,L,op===0?42:43):edStreamScalable(value,L,width,op===0?42:43);return sobolStream(value,L,width,op);}
+function addLfsrOrderFor(op){return +$(op==='A'?'addOrderA':'addOrderB').value;}
+function addConfigFor(op){const inputWidth=+$('addWidth').value,order=addLfsrOrderFor(op),key=$(op==='A'?'addPolyA':'addPolyB').value,seed=Number($(op==='A'?'addSeedA':'addSeedB').value),tapsEl=$(op==='A'?'addTapsA':'addTapsB');let taps,label;if(key==='CUSTOM'){taps=parseTaps(tapsEl.value,order);label=`Custom ${order}-bit`;}else{const p=getPreset(order,key);if(!p)throw new Error('Invalid addition LFSR preset for '+order+'-bit order.');taps=p.taps.slice();label=p.label;tapsEl.value=taps.join(',');}if(!Number.isInteger(seed)||seed<=0||seed>maxForBits(order))throw new Error(`Addition LFSR seed ${op} must be an integer from 1 to ${maxForBits(order)} for the selected ${order}-bit LFSR.`);return{taps,seed,label,key,order,inputWidth};}
+function populateAddPolySelect(op,preferred){const el=$(op==='A'?'addPolyA':'addPolyB'),old=el.value,order=addLfsrOrderFor(op);el.innerHTML='';for(const[v,t]of presetOptions(order)){const o=document.createElement('option');o.value=v;o.textContent=t;el.appendChild(o);}if(preferred&&[...el.options].some(o=>o.value===preferred))el.value=preferred;else if([...el.options].some(o=>o.value===old))el.value=old;else el.value=el.options[0].value;}
+function updateAddPolyInfo(op){const order=addLfsrOrderFor(op),key=$(op==='A'?'addPolyA':'addPolyB').value,tapsEl=$(op==='A'?'addTapsA':'addTapsB'),info=$(op==='A'?'addPolyInfoA':'addPolyInfoB');if(key==='CUSTOM'){tapsEl.disabled=false;try{const taps=parseTaps(tapsEl.value,order);info.innerHTML=`<span class="poly-chip">Order: ${order}-bit</span><span class="poly-chip">Polynomial: ${polynomialFromTaps(order,taps)}</span><span class="poly-chip">Taps: [${taps.join(',')}]</span><span class="poly-chip">Feedback: ${feedbackFromTaps(taps)}</span>`;}catch(e){info.innerHTML=`<span class="poly-chip">Custom ${order}-bit taps: enter 0–${order-1}</span>`;}}else{const p=getPreset(order,key);tapsEl.disabled=true;tapsEl.value=p.taps.join(',');info.innerHTML=`<span class="poly-chip">Order: ${order}-bit</span><span class="poly-chip">Polynomial: ${polynomialFromTaps(order,p.taps)}</span><span class="poly-chip">Taps: [${p.taps.join(',')}]</span><span class="poly-chip">Feedback: ${feedbackFromTaps(p.taps)}</span>`;}}
+function setAddInputRange(){const width=+$('addWidth').value,max=maxForBits(width);$('addA').max=String(max);$('addB').max=String(max);$('addSeedA').max=String(maxForBits(addLfsrOrderFor('A')));$('addSeedB').max=String(maxForBits(addLfsrOrderFor('B')));$('addA').value=clamp(+$('addA').value,0,max);$('addB').value=clamp(+$('addB').value,0,max);if(+$('addSeedA').value>maxForBits(addLfsrOrderFor('A')))$('addSeedA').value=1;if(+$('addSeedB').value>maxForBits(addLfsrOrderFor('B')))$('addSeedB').value=1;}
+function addMakeStream(method,value,L,width,op){if(method==='LFSR'){const cfg=addConfigFor(op===0?'A':'B');const states=lfsrStates(cfg.seed,cfg.taps,cfg.order,L),threshold=Math.round((value/maxForBits(width))*maxForBits(cfg.order));return states.map(st=>st<=threshold?1:0);}if(method==='ED')return width===8?edStream8(value,L,op===0?42:43):edStreamScalable(value,L,width,op===0?42:43);return sobolStream(value,L,width,op);}
 function addRun(method,A,B,L,width){const max=maxForBits(width),a=addMakeStream(method,A,L,width,0),b=addMakeStream(method,B,L,width,1),sel=addSelectStream(L),mux=a.map((x,i)=>sel[i]?b[i]:x),or=a.map((x,i)=>x|b[i]),pA=mean(a),pB=mean(b),pM=mean(mux),pO=mean(or),muxRaw=pM*max,mux2=pM*2*max,orRaw=pO*max;return{method,a,b,sel,mux,or,pA,pB,pM,pO,muxRaw,mux2,orRaw,idealM:(A+B)/2,idealS:A+B,muxErr:Math.abs(mux2-(A+B)),muxPct:(A+B===0)?0:Math.abs(mux2-(A+B))/(A+B)*100,orErr:Math.abs(orRaw-(A+B)),orPct:(A+B===0)?0:Math.abs(orRaw-(A+B))/(A+B)*100};}
 function drawAddArchitectureChart(canvas,A,B,width,architecture){if(!canvas)return;const dpr=window.devicePixelRatio||1,rect=canvas.getBoundingClientRect(),w=Math.max(650,rect.width||650),h=canvas.clientHeight||330;canvas.width=w*dpr;canvas.height=h*dpr;const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);const exact=A+B,xs=L_VALUES,m={l:72,r:24,t:50,b:58},pw=w-m.l-m.r,ph=h-m.t-m.b,series=ADD_METHODS.map(method=>({name:method,values:xs.map(L=>{const r=addRun(method,A,B,L,width);return architecture==='mux'?r.mux2:r.orRaw;})})),all=series.flatMap(s=>s.values).concat([exact]);let ymin=Math.min(...all),ymax=Math.max(...all),pad=Math.max((ymax-ymin)*.16,Math.max(1,Math.abs(exact))*.03);ymin=Math.max(0,ymin-pad);ymax+=pad;if(ymax===ymin)ymax=ymin+1;const xmin=Math.log2(xs[0]),xmax=Math.log2(xs[xs.length-1]),xp=x=>m.l+(Math.log2(x)-xmin)/(xmax-xmin)*pw,yp=v=>h-m.b-(v-ymin)/(ymax-ymin)*ph;c.font='800 14.5px system-ui';c.fillStyle='#17202a';c.fillText(`${architecture==='mux'?'MUX × 2':'OR'} • A=${A} • B=${B} • exact sum=${exact}`,m.l,24);c.font='600 12px system-ui';xs.forEach(x=>{const xx=xp(x);c.strokeStyle='#edf0f4';c.beginPath();c.moveTo(xx,m.t);c.lineTo(xx,h-m.b);c.stroke();c.fillStyle='#475467';c.fillText(String(x),xx-9,h-25);});c.save();c.setLineDash([7,5]);c.strokeStyle='#17202a';c.lineWidth=2;c.beginPath();c.moveTo(m.l,yp(exact));c.lineTo(w-m.r,yp(exact));c.stroke();c.restore();c.fillStyle='#17202a';c.fillText('Exact A+B',m.l,yp(exact)-8);const cols=['#315efb','#16855b','#8b5cf6'];series.forEach((s,si)=>{c.strokeStyle=cols[si];c.lineWidth=3;c.beginPath();s.values.forEach((v,i)=>{const xx=xp(xs[i]),yy=yp(v);i?c.lineTo(xx,yy):c.moveTo(xx,yy);});c.stroke();s.values.forEach((v,i)=>{const xx=xp(xs[i]),yy=yp(v);c.fillStyle=cols[si];c.beginPath();c.arc(xx,yy,3.5,0,Math.PI*2);c.fill();});const lx=m.l+si*125;c.fillStyle=cols[si];c.fillRect(lx,38,10,10);c.fillStyle='#17202a';c.fillText(s.name,lx+15,47);});}
 function drawAddPlaceholder(canvas,text){if(!canvas)return;const dpr=window.devicePixelRatio||1,rect=canvas.getBoundingClientRect(),w=Math.max(650,rect.width||650),h=canvas.clientHeight||300;canvas.width=w*dpr;canvas.height=h*dpr;const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);c.fillStyle='#7b8794';c.font='600 15px system-ui';c.textAlign='center';c.fillText(text,w/2,h/2);c.textAlign='left';}
 function renderAddition(){try{setAddInputRange();updateAddPolyInfo('A');updateAddPolyInfo('B');const width=+$('addWidth').value,L=+$('addL').value,max=maxForBits(width),A=clamp(+$('addA').value,0,max),B=clamp(+$('addB').value,0,max);$('addA').value=A;$('addB').value=B;addConfigFor('A');addConfigFor('B');const rs=ADD_METHODS.map(m=>addRun(m,A,B,L,width));$('addMuxHeroes').innerHTML=rs.map(r=>heroCard(r.method,`${width}-bit, L=${L}`,'MUX × 2 recovered sum',r.mux2.toFixed(4),[['Exact A+B',A+B],['Error',r.muxPct.toFixed(4)+'%']])).join('');$('addOrHeroes').innerHTML=rs.map(r=>heroCard(r.method,`${width}-bit, L=${L}`,'OR decoded value',r.orRaw.toFixed(4),[['Exact A+B',A+B],['Error',r.orPct.toFixed(4)+'%']])).join('');$('addMuxTable').innerHTML=rs.map(r=>`<tr><td><span class="mname m-${r.method}">${r.method}</span></td><td>${(r.pA*100).toFixed(3)}%</td><td>${(r.pB*100).toFixed(3)}%</td><td>${r.muxRaw.toFixed(4)}</td><td>${r.mux2.toFixed(4)}</td><td>${A+B}</td><td>${r.muxErr.toFixed(4)}</td><td>${r.muxPct.toFixed(4)}%</td></tr>`).join('');$('addOrTable').innerHTML=rs.map(r=>`<tr><td><span class="mname m-${r.method}">${r.method}</span></td><td>${(r.pA*100).toFixed(3)}%</td><td>${(r.pB*100).toFixed(3)}%</td><td>${(r.pO*100).toFixed(3)}%</td><td>${r.orRaw.toFixed(4)}</td><td>${A+B}</td><td>${r.orErr.toFixed(4)}</td><td>${r.orPct.toFixed(4)}%</td></tr>`).join('');$('addStreamGrid').innerHTML=rs.map(r=>{const bits=a=>a.map((b,i)=>`<span class="bit${b?' one':''}" title="Cycle ${i+1}: ${b}">${b}</span>`).join(''),out=a=>a.map((b,i)=>`<span class="bit${b?' out':''}" title="Cycle ${i+1}: ${b}">${b}</span>`).join(''),onesA=r.a.reduce((s,b)=>s+b,0),onesB=r.b.reduce((s,b)=>s+b,0),onesM=r.mux.reduce((s,b)=>s+b,0),onesO=r.or.reduce((s,b)=>s+b,0);return `<div class="stream-card h-${r.method}"><div class="stream-head"><span class="mname m-${r.method}">${r.method}</span><span class="note">L=${L}</span></div><div class="stream-meta"><span class="stream-chip">P(A)=${(r.pA*100).toFixed(3)}%</span><span class="stream-chip">P(B)=${(r.pB*100).toFixed(3)}%</span><span class="stream-chip">MUX×2=${r.mux2.toFixed(3)}</span><span class="stream-chip">OR=${r.orRaw.toFixed(3)}</span></div><div class="note">A — ${onesA}/${L}</div><div class="bits-scroll"><div class="bits">${bits(r.a)}</div></div><div class="note" style="margin-top:8px">B — ${onesB}/${L}</div><div class="bits-scroll"><div class="bits">${bits(r.b)}</div></div><div class="note" style="margin-top:8px">Select — deterministic 1010… (${r.sel.reduce((s,b)=>s+b,0)}/${L})</div><div class="bits-scroll"><div class="bits">${out(r.sel)}</div></div><div class="note" style="margin-top:8px">MUX output — ${onesM}/${L}</div><div class="bits-scroll"><div class="bits">${out(r.mux)}</div></div><div class="note" style="margin-top:8px">OR output — ${onesO}/${L}</div><div class="bits-scroll"><div class="bits">${out(r.or)}</div></div></div>`;}).join('');if($('additionPanel').classList.contains('active'))requestAnimationFrame(()=>{drawAddArchitectureChart($('addMuxChart'),A,B,width,'mux');drawAddArchitectureChart($('addOrChart'),A,B,width,'or');});$('addBenchStatus').textContent=`Ready: A=${A}, B=${B}, L=${L}. Benchmark is independent of the single-input view.`;}catch(e){console.error('Addition error:',e);$('addMuxHeroes').innerHTML=`<div class="note" style="color:#b42318"><strong>Addition configuration error:</strong> ${e.message}</div>`;drawAddPlaceholder($('addMuxChart'),'Fix the addition LFSR configuration to draw this plot.');drawAddPlaceholder($('addOrChart'),'Fix the addition LFSR configuration to draw this plot.');}}
-function runAddBenchmark(){try{const L=+$('addBenchL').value,metric=$('addBenchMetric').value,width=8,rows=[];for(const method of ADD_METHODS){let sumM=0,sumM2=0,mxM=0,biasM=0,sumO=0,sumO2=0,mxO=0,biasO=0,n=0;for(let A=0;A<=255;A++)for(let B=0;B<=255;B++){const r=addRun(method,A,B,L,width),dm=r.mux2-(A+B),doe=r.orRaw-(A+B);sumM+=Math.abs(dm);sumM2+=dm*dm;mxM=Math.max(mxM,Math.abs(dm));biasM+=dm;sumO+=Math.abs(doe);sumO2+=doe*doe;mxO=Math.max(mxO,Math.abs(doe));biasO+=doe;n++;}rows.push({method,mux:{mae:sumM/n,rmse:Math.sqrt(sumM2/n),max:mxM,bias:biasM/n},or:{mae:sumO/n,rmse:Math.sqrt(sumO2/n),max:mxO,bias:biasO/n}});}drawBar($('addMuxBenchmarkChart'),ADD_METHODS,rows.map(r=>r.mux[metric]),`8-bit exhaustive 256×256 • L=${L} • MUX × 2 • ${metric.toUpperCase()}`);drawBar($('addOrBenchmarkChart'),ADD_METHODS,rows.map(r=>r.or[metric]),`8-bit exhaustive 256×256 • L=${L} • OR • ${metric.toUpperCase()}`);$('addBenchStatus').textContent=`Completed all 65,536 input pairs for L=${L}. Both MUX × 2 and OR were evaluated separately.`;}catch(e){$('addBenchStatus').textContent='Benchmark error: '+e.message;console.error(e);}}
+function runAddBenchmark(){
+try{
+  const L=+$('addBenchL').value,metric=$('addBenchMetric').value,width=8,rows=[],pairs=[];
+  if(L<=1024){
+    for(let A=0;A<=255;A++)for(let B=0;B<=255;B++)pairs.push([A,B]);
+  }else{
+    const rng=mulberry32(8008+L);
+    for(let i=0;i<2048;i++)pairs.push([Math.floor(rng()*256),Math.floor(rng()*256)]);
+  }
+  for(const method of ADD_METHODS){
+    let sumM=0,sumM2=0,mxM=0,biasM=0,sumO=0,sumO2=0,mxO=0,biasO=0,n=0;
+    for(const [A,B] of pairs){
+      const r=addRun(method,A,B,L,width),dm=r.mux2-(A+B),doe=r.orRaw-(A+B);
+      sumM+=Math.abs(dm);sumM2+=dm*dm;mxM=Math.max(mxM,Math.abs(dm));biasM+=dm;
+      sumO+=Math.abs(doe);sumO2+=doe*doe;mxO=Math.max(mxO,Math.abs(doe));biasO+=doe;n++;
+    }
+    rows.push({method,mux:{mae:sumM/n,rmse:Math.sqrt(sumM2/n),max:mxM,bias:biasM/n},or:{mae:sumO/n,rmse:Math.sqrt(sumO2/n),max:mxO,bias:biasO/n}});
+  }
+  const mode=L<=1024?'exhaustive 256×256':'sampled 2,048 pairs';
+  drawBar($('addMuxBenchmarkChart'),ADD_METHODS,rows.map(r=>r.mux[metric]),`8-bit ${mode} • L=${L} • MUX × 2 • ${metric.toUpperCase()}`);
+  drawBar($('addOrBenchmarkChart'),ADD_METHODS,rows.map(r=>r.or[metric]),`8-bit ${mode} • L=${L} • OR • ${metric.toUpperCase()}`);
+  $('addBenchStatus').textContent=L<=1024
+    ? `Completed all 65,536 input pairs for L=${L}. Both MUX × 2 and OR were evaluated separately.`
+    : `Completed a sampled 2,048-pair benchmark for L=${L}; exhaustive 256×256 is intentionally avoided at long streams.`;
+}catch(e){$('addBenchStatus').textContent='Benchmark error: '+e.message;console.error(e);}}
 function initAddition(){
-populateAddPolySelect('A','P2');populateAddPolySelect('B','P2');$('addPolyA').value='P2';$('addPolyB').value='P2';$('addSeedA').value=198;$('addSeedB').value=86;setAddInputRange();updateAddPolyInfo('A');updateAddPolyInfo('B');
+$('addOrderA').value='8';$('addOrderB').value='8';populateAddPolySelect('A','P2');populateAddPolySelect('B','P2');$('addPolyA').value='P2';$('addPolyB').value='P2';$('addSeedA').value=198;$('addSeedB').value=86;setAddInputRange();updateAddPolyInfo('A');updateAddPolyInfo('B');
 ['addA','addB'].forEach(id=>$(id).addEventListener('input',renderAddition));
-$('addWidth').addEventListener('change',()=>{setAddInputRange();populateAddPolySelect('A','P2');populateAddPolySelect('B','P2');if(+$('addWidth').value===8){$('addSeedA').value=198;$('addSeedB').value=86;}else if(+$('addWidth').value===16){$('addSeedA').value=44257;$('addSeedB').value=48879;}else{$('addSeedA').value=305419896;$('addSeedB').value=2654435769;}updateAddPolyInfo('A');updateAddPolyInfo('B');renderAddition();});
+$('addWidth').addEventListener('change',()=>{const w=+$('addWidth').value;$('addOrderA').value=String(w);$('addOrderB').value=String(w);setAddInputRange();populateAddPolySelect('A',w===8?'P2':(w===16?'P16A':'P32A'));populateAddPolySelect('B',w===8?'P2':(w===16?'P16B':'P32B'));if(w===8){$('addSeedA').value=198;$('addSeedB').value=86;}else if(w===16){$('addSeedA').value=44257;$('addSeedB').value=48879;}else{$('addSeedA').value=305419896;$('addSeedB').value=2654435769;}updateAddPolyInfo('A');updateAddPolyInfo('B');renderAddition();});
+['A','B'].forEach(op=>$(op==='A'?'addOrderA':'addOrderB').addEventListener('change',()=>{const order=addLfsrOrderFor(op),pref=op==='A'?(order===8?'P2':order===12?'P12A':order===16?'P16A':'P32A'):(order===8?'P2':order===12?'P12B':order===16?'P16B':'P32B');populateAddPolySelect(op,pref);const seedEl=$(op==='A'?'addSeedA':'addSeedB');if(Number(seedEl.value)>maxForBits(order))seedEl.value=Math.floor(maxForBits(order)/3);updateAddPolyInfo(op);renderAddition();}));
 $('addL').addEventListener('change',renderAddition);$('addArch').addEventListener('change',renderAddition);$('addSelect').addEventListener('change',renderAddition);$('addRun').addEventListener('click',renderAddition);
-$('addReset').addEventListener('click',()=>{$('addWidth').value='8';$('addL').value='32';$('addA').value='45';$('addB').value='156';$('addArch').value='both';$('addSelect').value='det';$('addPolyA').value='P2';$('addPolyB').value='P2';$('addSeedA').value=198;$('addSeedB').value=86;$('addTapsA').value='7,5,4,1';$('addTapsB').value='7,5,4,1';setAddInputRange();updateAddPolyInfo('A');updateAddPolyInfo('B');renderAddition();});
-$('addCopyMulLfsr').addEventListener('click',()=>{try{const w=currentWidth();$('addWidth').value=String(w);setAddInputRange();$('addPolyA').value=$('polyA').value;$('addPolyB').value=$('polyB').value;$('addSeedA').value=$('seedA').value;$('addSeedB').value=$('seedB').value;$('addTapsA').value=$('tapsA').value;$('addTapsB').value=$('tapsB').value;updateAddPolyInfo('A');updateAddPolyInfo('B');renderAddition();}catch(e){console.error(e);}});
+$('addReset').addEventListener('click',()=>{$('addWidth').value='8';$('addL').value='32';$('addOrderA').value='8';$('addOrderB').value='8';$('addA').value='45';$('addB').value='156';$('addArch').value='both';$('addSelect').value='det';$('addPolyA').value='P2';$('addPolyB').value='P2';$('addSeedA').value=198;$('addSeedB').value=86;$('addTapsA').value='7,5,4,1';$('addTapsB').value='7,5,4,1';setAddInputRange();updateAddPolyInfo('A');updateAddPolyInfo('B');renderAddition();});
+$('addCopyMulLfsr').addEventListener('click',()=>{try{const w=currentWidth();$('addWidth').value=String(w);setAddInputRange();$('addOrderA').value=$('orderA').value;$('addOrderB').value=$('orderB').value;$('addPolyA').value=$('polyA').value;$('addPolyB').value=$('polyB').value;$('addSeedA').value=$('seedA').value;$('addSeedB').value=$('seedB').value;$('addTapsA').value=$('tapsA').value;$('addTapsB').value=$('tapsB').value;updateAddPolyInfo('A');updateAddPolyInfo('B');renderAddition();}catch(e){console.error(e);}});
 ['A','B'].forEach(op=>{$(op==='A'?'addPolyA':'addPolyB').addEventListener('change',()=>{updateAddPolyInfo(op);renderAddition();});$(op==='A'?'addSeedA':'addSeedB').addEventListener('input',renderAddition);$(op==='A'?'addTapsA':'addTapsB').addEventListener('input',()=>{updateAddPolyInfo(op);if($(op==='A'?'addPolyA':'addPolyB').value==='CUSTOM')renderAddition();});});
 $('addBenchmark').addEventListener('click',()=>setTimeout(runAddBenchmark,20));
 $('addBenchL').addEventListener('change',()=>{drawAddPlaceholder($('addMuxBenchmarkChart'),'Click “Run 256 × 256 exhaustive benchmark” to calculate MUX × 2 results.');drawAddPlaceholder($('addOrBenchmarkChart'),'Click “Run 256 × 256 exhaustive benchmark” to calculate OR results.');});
@@ -869,6 +946,15 @@ function init(){
   loadWidthPresets(8);
   setInputRange(false);
   $("width").addEventListener("change",()=>{const old=window._oldWidth||8;window._oldWidth=currentWidth();setInputRange(true,old);loadWidthPresets(old);renderSingle();});
+  ["A","B"].forEach(op=>$(op==="A"?"orderA":"orderB").addEventListener("change",()=>{
+    const order=lfsrOrderFor(op);
+    populatePolySelect(op,order===8?"P2":(order===12?"P12A":(order===16?"P16A":"P32A")));
+    if(op==="B" && order===8) populatePolySelect("B","P2");
+    else if(op==="B" && order===12) populatePolySelect("B","P12B");
+    else if(op==="B" && order===16) populatePolySelect("B","P16B");
+    else if(op==="B" && order===32) populatePolySelect("B","P32B");
+    setLfsrSeedLimits(); updatePolyInfo(op); renderSingle();
+  }));
   $("L").addEventListener("change",()=>{populateSeedList("A");populateSeedList("B");if(currentWidth()===8){$("seedA").value=198;$("seedB").value=86;}renderSingle();});
   ["A","B","seedA","seedB"].forEach(id=>$(id).addEventListener("input",()=>renderSingle()));
   $("tapsA").addEventListener("input",()=>{updateCustomPolyLive("A");if($("polyA").value==="CUSTOM"){try{renderSingle();}catch(e){}}});
@@ -878,6 +964,7 @@ function init(){
   $("applyLfsr").addEventListener("click",renderSingle);
   $("loadNotebookWinner").addEventListener("click",()=>{
     if(currentWidth()!==8){$("width").value="8";setInputRange(true,currentWidth());loadWidthPresets(currentWidth());}
+    $("orderA").value="8";$("orderB").value="8";
     const L=currentL();
     $("polyA").value="P2";$("seedA").value=198;$("polyB").value="P2";$("seedB").value=86;
     updatePolyInfo("A");updatePolyInfo("B");renderSingle();
@@ -888,7 +975,13 @@ function init(){
   });
   $("runBenchmark").addEventListener("click",()=>{
     const w=currentWidth();
-    if(w===8){benchmark[8]=DATA8.slice();setStatus("8-bit benchmark is the completed exhaustive notebook dataset; it is not recomputed in the browser.");}
+    if(w===8 && currentL()<=1024){benchmark[8]=DATA8.slice();setStatus("8-bit benchmark is the completed exhaustive notebook dataset; it is not recomputed in the browser.");}
+    else if(w===8){
+      const s=+$('samples').value,L=currentL();
+      setStatus(`Running ${s.toLocaleString()} sampled operand pairs for 8-bit at L=${L}...`);
+      setTimeout(()=>{benchmarkWidthAtL(8,s,L);setStatus(`8-bit sampled benchmark complete for L=${L}. The notebook-exact dataset remains available through L=1024.`);renderSameL();renderSameMethod();renderPrecision();},30);
+      return;
+    }
     else {
       const s=+$("samples").value;
       setStatus(`Running ${s.toLocaleString()} sampled operand pairs for ${w}-bit using the selected independent LFSR configurations...`);
@@ -899,6 +992,7 @@ function init(){
   });
   $("reset").addEventListener("click",()=>{
     $("width").value="8";$("L").value="32";$("A").value="170";$("B").value="150";
+    $("orderA").value="8";$("orderB").value="8";
     populatePolySelect("A","P2");populatePolySelect("B","P2");$("seedA").value=198;$("seedB").value=86;
     updatePolyInfo("A");updatePolyInfo("B");setInputRange(false);renderSingle();setStatus("Reset: 8-bit notebook mode, L=32, P2-198 × P2-86.");renderSameL();renderSameMethod();renderPrecision();
   });
