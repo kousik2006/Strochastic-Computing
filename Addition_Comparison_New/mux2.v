@@ -4,5 +4,7 @@ module mux2 (
     input  wire sel,
     output wire y
 );
+
     assign y = sel ? d1 : d0;
+
 endmodule
