@@ -3,12 +3,12 @@ module tb_sc_adder_sobol_L16;
     parameter integer N = 8;
     localparam integer L = 16;
 
-    reg clk;
-    reg reset;
-    reg [N-1:0] A;
-    reg [N-1:0] B;
+    reg          clk;
+    reg          reset;
+    reg  [N-1:0] A;
+    reg  [N-1:0] B;
 
-    wire sum_bit;
+    wire         sum_bit;
 
     integer i;
     integer ones;
@@ -17,7 +17,9 @@ module tb_sc_adder_sobol_L16;
     real exact_sum;
     real abs_error;
 
-    sc_adder_sobol #(.N(N)) DUT (
+    sc_adder_sobol #(
+        .N(N)
+    ) DUT (
         .clk(clk),
         .reset(reset),
         .A(A),
@@ -37,6 +39,7 @@ module tb_sc_adder_sobol_L16;
             ones = 0;
 
             reset = 1'b1;
+
             @(negedge clk);
             reset = 1'b0;
 
@@ -45,21 +48,24 @@ module tb_sc_adder_sobol_L16;
                 ones = ones + sum_bit;
             end
 
-            exact_sum = A + B;
+            exact_sum = {1'b0, A} + {1'b0, B};
             estimate = (2.0 * ones * ((1 << N) - 1)) / L;
 
             abs_error = estimate - exact_sum;
+
             if (abs_error < 0.0)
                 abs_error = -abs_error;
 
-            $display("A=%0d B=%0d | ones=%0d/%0d | exact=%0.3f | estimate=%0.3f | abs_err=%0.3f",
-                     A, B, ones, L, exact_sum, estimate, abs_error);
+            $display(
+                "A=%0d B=%0d | ones=%0d/%0d | exact=%0.3f | estimate=%0.3f | abs_err=%0.3f",
+                A, B, ones, L, exact_sum, estimate, abs_error
+            );
         end
     endtask
 
     initial begin
-        clk = 0;
-        reset = 1;
+        clk = 1'b0;
+        reset = 1'b1;
         A = 0;
         B = 0;
 
