@@ -7,8 +7,8 @@ module sobol #(
 );
 
     reg [N-1:0] index;
-    integer i;
     reg [N-1:0] gray;
+    integer i;
 
     always @(posedge clk) begin
         if (reset) begin
