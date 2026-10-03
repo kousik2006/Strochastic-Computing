@@ -1,5 +1,5 @@
 module sc_adder_lfsr #(
-    parameter integer N = 8,
+    parameter integer N = 32,
     parameter [N-1:0] TAP_MASK = 8'b10110010,
     parameter [N-1:0] SEED_A   = 8'b11000110,
     parameter [N-1:0] SEED_B   = 8'b01010110

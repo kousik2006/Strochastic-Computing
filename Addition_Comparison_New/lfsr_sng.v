@@ -1,5 +1,5 @@
 module lfsr_sng #(
-    parameter integer N = 8,
+    parameter integer N = 32,
     parameter [N-1:0] TAP_MASK = 8'b10110010,
     parameter [N-1:0] SEED     = 8'b00000001
 )(

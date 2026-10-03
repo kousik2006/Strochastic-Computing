@@ -1,5 +1,5 @@
 module binary_adder_parameterized #(
-    parameter integer N = 8
+    parameter integer N = 32
 )(
     input  wire [N-1:0] A,
     input  wire [N-1:0] B,

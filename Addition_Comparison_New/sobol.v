@@ -1,5 +1,5 @@
 module sobol #(
-    parameter integer N = 8
+    parameter integer N = 32
 )(
     input  wire         clk,
     input  wire         reset,
