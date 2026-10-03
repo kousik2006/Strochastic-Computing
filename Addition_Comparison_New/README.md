@@ -1,71 +1,69 @@
 # Addition_Comparison_New
 
-Simplified, modular, synthesizable RTL comparison of conventional binary addition, LFSR-based stochastic scaled addition, and Sobol-based stochastic scaled addition.
+Clean, modular RTL for comparing:
 
-## Architecture
+1. Conventional binary addition
+2. LFSR-based stochastic scaled addition
+3. Sobol-based stochastic scaled addition
 
-Binary:
-- N-bit parameterized binary adder.
+## Core RTL
 
-LFSR stochastic:
-- Parameterized LFSR
-- LFSR SNG = LFSR + comparator
-- 50% toggle select
-- 2:1 MUX for scaled addition
-- Output probability estimated over L cycles
+- binary_adder.v — parameterized N-bit binary adder
+- lfsr.v — parameterized LFSR
+- lfsr_sng.v — LFSR + comparator SNG
+- sobol.v — parameterized compact 1-D base-2 Sobol generator
+- sobol_sng.v — Sobol + comparator SNG
+- select_toggle.v — alternating 0/1 select stream
+- mux2.v — 2:1 one-bit MUX
+- sc_adder_lfsr.v — LFSR stochastic scaled adder
+- sc_adder_sobol.v — Sobol stochastic scaled adder
+- stochastic_counter.v — optional stochastic-output counter
 
-Sobol stochastic:
-- Parameterized compact 1-D base-2 Sobol generator
-- Sobol SNG = Sobol generator + comparator
-- 50% toggle select
-- 2:1 MUX for scaled addition
-- Output probability estimated over L cycles
-
-## Encoding convention
+## Encoding
 
 Both SNGs use:
 
-  stochastic_bit = (sequence_value <= input_value)
+    stochastic_bit = (sequence_value <= input_value)
 
-The LFSR uses the non-zero N-bit sample space 1...(2^N-1). The current Sobol implementation produces a permutation of the same N-bit non-zero sample space for the architecture-level comparison.
+For the current N-bit non-zero sequence space 1 ... (2^N - 1):
 
-For scaled stochastic addition:
+    P(bit = 1) = input_value / (2^N - 1)
 
-  P(out=1) = (P(A=1)+P(B=1))/2
+For stochastic scaled addition:
 
-so the decoded estimate is:
+    P(out = 1) = (P(A = 1) + P(B = 1)) / 2
 
-  estimate = 2 * ones * (2^N-1) / L
+Decoded estimate:
 
-The probability-estimator counter is a separate block. It counts 0...L, so its width is $clog2(L+1). This is different from the N-bit sequence/index generator.
+    estimate = 2 * ones * (2^N - 1) / L
+
+Here, L is the number of stochastic samples collected by the testbench.
 
 ## Parameterization
 
+The main RTL modules are parameterized.
+
 Default:
-  N = 8
+
+    N = 8
 
 Examples:
-  N=4  -> sequence space uses 1...15
-  N=8  -> sequence space uses 1...255
-  N=10 -> sequence space uses 1...1023
 
-The current project comparisons use L=16 and L=32.
+    N = 4  -> sequence range 1 ... 15
+    N = 8  -> sequence range 1 ... 255
+    N = 10 -> sequence range 1 ... 1023
 
-## Files
+The current comparison testbenches evaluate:
 
-Core RTL:
-- binary_adder.v
-- lfsr.v
-- lfsr_sng.v
-- sobol.v
-- sobol_sng.v
-- select_toggle.v
-- mux2.v
-- stochastic_counter.v
-- sc_adder_lfsr.v
-- sc_adder_sobol.v
+    L = 16
+    L = 32
 
-Separate testbenches:
+L remains a testbench setting so the same RTL can be evaluated at different stream lengths.
+
+For lfsr.v, provide an N-bit TAP_MASK and SEED explicitly when using N other than the default 8-bit configuration.
+
+## Testbenches
+
 - tb_binary_adder.v
 - tb_lfsr_sng.v
 - tb_sobol_sng.v
@@ -74,8 +72,52 @@ Separate testbenches:
 - tb_sc_adder_sobol_L16.v
 - tb_sc_adder_sobol_L32.v
 
-These RTL blocks intentionally use a mix of inferred hardware and explicit module boundaries. This keeps the code simple and synthesizable while making it easy to replace individual modules with structural versions later for gate-level comparison.
+The stochastic-adder testbenches compare the decoded stochastic estimate with the exact binary sum and report absolute error.
 
-## Power note
+## Vivado
 
-Using behavioral/inferred RTL does not by itself guarantee lower power. Vivado may synthesize equivalent hardware. Power should be measured after synthesis/implementation. The main architectural levers for power are switching activity, SNG cost, sequence length L, generator sharing, and early termination.
+### Binary synthesis
+
+Top module:
+
+    binary_adder
+
+Design Sources:
+
+    binary_adder.v
+
+### LFSR stochastic synthesis
+
+Top module:
+
+    sc_adder_lfsr
+
+Design Sources:
+
+    lfsr.v
+    lfsr_sng.v
+    select_toggle.v
+    mux2.v
+    sc_adder_lfsr.v
+
+### Sobol stochastic synthesis
+
+Top module:
+
+    sc_adder_sobol
+
+Design Sources:
+
+    sobol.v
+    sobol_sng.v
+    select_toggle.v
+    mux2.v
+    sc_adder_sobol.v
+
+Testbenches are simulation sources only.
+
+## Measurement note
+
+Behavioral or inferred RTL does not automatically guarantee lower power or area after synthesis. For a fair Vivado comparison, keep the FPGA part, clock constraints, input width, synthesis settings, implementation settings, and switching assumptions consistent across designs.
+
+Measure area and power after synthesis/implementation.
