@@ -1,0 +1,5 @@
+Design,Total On-Chip Power (W),Dynamic Power (W),Device Static (W),Signal Power (W),Logic Power (W),I/O Power (W)
+Wallace run 1,14.021,13.797,0.224,1.13,1.013,11.654
+Wallace run 2,9.963,9.825,0.138,0.41,0.284,9.132
+Dadda run 1,13.699,13.484,0.215,1.077,0.893,11.514
+Booth / other run,,,,,,

@@ -1,0 +1,4 @@
+Multiplier,LUTs,Registers,Bonded IOBs,BUFGCTRL
+Wallace 8-bit,100,,32,
+Booth 8-bit,47,36.0,43,1.0
+Dadda 8-bit,90,,32,
