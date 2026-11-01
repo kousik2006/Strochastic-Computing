@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dadda Multiplier Interactive Lab — From Zero to VLSI Architect</title>
+
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #0b0f19;
+      color: #e2e8f0;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom scrollbar for SVG/diagram containers */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111827;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #1e293b; }
+    html, body { margin: 0; padding: 0; background-color: #0b0f19; color: #e2e8f0; font-family: 'Inter', system-ui, -apple-system, sans-serif; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+    h1, h2, h3, h4, p, ul { margin: 0; }
+    ul { padding-left: 1.25rem; }
+    button, input { font-family: inherit; font-size: inherit; color: inherit; background: none; }
+    button { cursor: pointer; }
+    svg { display: block; max-width: 100%; height: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    .hidden { display: none !important; }
+    .min-h-screen { min-height: 100vh; }
+    .flex { display: flex; }
+    .inline-flex { display: inline-flex; }
+    .grid { display: grid; }
+    .flex-col { flex-direction: column; }
+    .flex-wrap { flex-wrap: wrap; }
+    .flex-1 { flex: 1 1 0%; }
+    .shrink-0 { flex-shrink: 0; }
+    .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
+    .items-baseline { align-items: baseline; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .text-left { text-align: left; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .w-full { width: 100%; }
+    .w-5 { width: 1.25rem; }
+    .w-6 { width: 1.5rem; }
+    .w-8 { width: 2rem; }
+    .w-10 { width: 2.5rem; }
+    .w-24 { width: 6rem; }
+    .h-3 { height: 0.75rem; }
+    .h-5 { height: 1.25rem; }
+    .h-7 { height: 1.75rem; }
+    .h-8 { height: 2rem; }
+    .h-10 { height: 2.5rem; }
+    .w-3 { width: 0.75rem; }
+    .max-w-7xl { max-width: 80rem; }
+    .max-w-3xl { max-width: 48rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .my-1 { margin-top: 0.25rem; margin-bottom: 0.25rem; }
+    .mt-0\.5 { margin-top: 0.125rem; }
+    .mt-1 { margin-top: 0.25rem; }
+    .mt-1\.5 { margin-top: 0.375rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mr-1 { margin-right: 0.25rem; }
+    .ml-1 { margin-left: 0.25rem; }
+    .ml-2 { margin-left: 0.5rem; }
+    .p-0\.5 { padding: 0.125rem; }
+    .p-1 { padding: 0.25rem; }
+    .p-1\.5 { padding: 0.375rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-2\.5 { padding: 0.625rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-3\.5 { padding: 0.875rem; }
+    .p-4 { padding: 1rem; }
+    .p-5 { padding: 1.25rem; }
+    .px-1 { padding-left: 0.25rem; padding-right: 0.25rem; }
+    .px-1\.5 { padding-left: 0.375rem; padding-right: 0.375rem; }
+    .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .px-2\.5 { padding-left: 0.625rem; padding-right: 0.625rem; }
+    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+    .px-3\.5 { padding-left: 0.875rem; padding-right: 0.875rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-0\.5 { padding-top: 0.125rem; padding-bottom: 0.125rem; }
+    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+    .py-1\.5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-2\.5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+    .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+    .pt-0\.5 { padding-top: 0.125rem; }
+    .pt-1 { padding-top: 0.25rem; }
+    .pt-2 { padding-top: 0.5rem; }
+    .pb-1 { padding-bottom: 0.25rem; }
+    .pb-2\.5 { padding-bottom: 0.625rem; }
+    .pb-3 { padding-bottom: 0.75rem; }
+    .pr-1 { padding-right: 0.25rem; }
+    .gap-1 { gap: 0.25rem; }
+    .gap-1\.5 { gap: 0.375rem; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-2\.5 { gap: 0.625rem; }
+    .gap-3 { gap: 0.75rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-5 { gap: 1.25rem; }
+    .gap-6 { gap: 1.5rem; }
+    .space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }
+    .space-y-1\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.375rem; }
+    .space-y-2 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.5rem; }
+    .space-y-2\.5 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.625rem; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+    .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+    .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem; }
+    .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+    .divide-y > :not([hidden]) ~ :not([hidden]) { border-top-width: 1px; border-color: rgba(30, 41, 59, 0.7); }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .rounded-full { border-radius: 9999px; }
+    .rounded-\[10px\] { border-radius: 10px; }
+    .border { border-width: 1px; }
+    .border-2 { border-width: 2px; }
+    .border-b { border-bottom-width: 1px; }
+    .border-t { border-top-width: 1px; }
+    .border-slate-800, .border-slate-800\/90, .border-slate-800\/80, .border-slate-800\/60 { border-color: #1e293b; }
+    .border-slate-700 { border-color: #334155; }
+    .border-slate-600 { border-color: #475569; }
+    .border-slate-500 { border-color: #64748b; }
+    .border-sky-500\/30, .border-sky-500\/40 { border-color: rgba(14, 165, 233, 0.38); }
+    .border-sky-400, .border-sky-300, .border-sky-200 { border-color: #38bdf8; }
+    .border-amber-500\/30, .border-amber-500\/40 { border-color: rgba(245, 158, 11, 0.4); }
+    .border-amber-400 { border-color: #fbbf24; }
+    .border-emerald-500\/30, .border-emerald-500\/40, .border-emerald-500\/50 { border-color: rgba(16, 185, 129, 0.4); }
+    .border-emerald-400, .border-emerald-300 { border-color: #34d399; }
+    .border-rose-500\/40, .border-rose-500\/50, .border-rose-500\/30 { border-color: rgba(244, 63, 94, 0.45); }
+    .border-rose-400, .border-rose-300 { border-color: #fb7185; }
+    .border-indigo-500\/40 { border-color: rgba(99, 102, 241, 0.4); }
+    .border-purple-500\/30, .border-purple-500\/40 { border-color: rgba(168, 85, 247, 0.4); }
+    .bg-slate-950, .bg-slate-950\/90, .bg-slate-950\/80, .bg-slate-950\/70, .bg-slate-950\/60 { background-color: #020617; }
+    .bg-slate-900, .bg-slate-900\/90, .bg-slate-900\/80, .bg-slate-900\/60 { background-color: #0f172a; }
+    .bg-slate-800 { background-color: #1e293b; }
+    .bg-sky-500 { background-color: #0ea5e9; }
+    .bg-sky-400 { background-color: #38bdf8; }
+    .bg-sky-500\/10, .bg-sky-500\/15, .bg-sky-500\/20, .bg-sky-500\/30 { background-color: rgba(14, 165, 233, 0.16); }
+    .bg-amber-500 { background-color: #f59e0b; }
+    .bg-amber-500\/10, .bg-amber-500\/15, .bg-amber-500\/20, .bg-amber-500\/30 { background-color: rgba(245, 158, 11, 0.16); }
+    .bg-emerald-500 { background-color: #10b981; }
+    .bg-emerald-500\/10, .bg-emerald-500\/15, .bg-emerald-500\/20 { background-color: rgba(16, 185, 129, 0.16); }
+    .bg-rose-500 { background-color: #f43f5e; }
+    .bg-rose-500\/10, .bg-rose-500\/15, .bg-rose-500\/20, .bg-rose-500\/30 { background-color: rgba(244, 63, 94, 0.16); }
+    .bg-indigo-500\/15 { background-color: rgba(99, 102, 241, 0.16); }
+    .bg-purple-500\/10, .bg-purple-500\/15, .bg-purple-500\/20 { background-color: rgba(168, 85, 247, 0.16); }
+    .bg-gradient-to-br { background-image: linear-gradient(to bottom right, #0f172a, #111827, #1e1b4b); }
+    .bg-gradient-to-b { background-image: linear-gradient(to bottom, #0f172a, #020617); }
+    .text-white { color: #ffffff; }
+    .text-slate-950 { color: #020617; }
+    .text-slate-200 { color: #e2e8f0; }
+    .text-slate-300 { color: #cbd5e1; }
+    .text-slate-400 { color: #94a3b8; }
+    .text-slate-500 { color: #64748b; }
+    .text-sky-200 { color: #bae6fd; }
+    .text-sky-300 { color: #7dd3fc; }
+    .text-sky-400 { color: #38bdf8; }
+    .text-amber-200 { color: #fde68a; }
+    .text-amber-300 { color: #fcd34d; }
+    .text-amber-400 { color: #fbbf24; }
+    .text-emerald-200 { color: #a7f3d0; }
+    .text-emerald-300 { color: #6ee7b7; }
+    .text-emerald-400 { color: #34d399; }
+    .text-rose-200 { color: #fecdd3; }
+    .text-rose-300 { color: #fda4af; }
+    .text-rose-400 { color: #fb7185; }
+    .text-indigo-300 { color: #a5b4fc; }
+    .text-purple-300 { color: #d8b4fe; }
+    .text-purple-400 { color: #c084fc; }
+    .font-mono, .mono { font-family: 'JetBrains Mono', monospace; }
+    .text-\[10px\] { font-size: 10px; }
+    .text-\[11px\] { font-size: 11px; }
+    .text-xs { font-size: 0.75rem; line-height: 1.1rem; }
+    .text-sm { font-size: 0.875rem; line-height: 1.3rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .text-lg { font-size: 1.125rem; line-height: 1.65rem; }
+    .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+    .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .font-extrabold { font-weight: 800; }
+    .uppercase { text-transform: uppercase; }
+    .tracking-tight { letter-spacing: -0.02em; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .leading-tight { line-height: 1.25; }
+    .leading-relaxed { line-height: 1.6; }
+    .overflow-x-auto { overflow-x: auto; }
+    .overflow-y-auto { overflow-y: auto; }
+    .max-h-\[290px\] { max-height: 290px; }
+    .min-h-\[46px\] { min-height: 46px; }
+    .min-w-\[420px\] { min-width: 420px; }
+    .min-w-\[580px\] { min-width: 580px; }
+    .inline-block { display: inline-block; }
+    .sticky { position: sticky; }
+    .top-0 { top: 0; }
+    .z-30 { z-index: 30; }
+    .pointer-events-none { pointer-events: none; }
+    .select-none { user-select: none; }
+    .break-all { word-break: break-all; }
+    .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+    .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    @media (min-width: 640px) {
+      .sm\:block { display: block !important; }
+      .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .sm\:p-5 { padding: 1.25rem; }
+      .sm\:p-6 { padding: 1.5rem; }
+      .sm\:text-sm { font-size: 0.875rem; }
+      .sm\:text-base { font-size: 1rem; }
+      .sm\:text-lg { font-size: 1.125rem; }
+      .sm\:text-2xl { font-size: 1.5rem; }
+      .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .sm\:grid-cols-8 { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+      .sm\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .sm\:col-span-4 { grid-column: span 4 / span 4; }
+    }
+    @media (min-width: 768px) {
+      .md\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .md\:col-span-4 { grid-column: span 4 / span 4; }
+    }
+    @media (min-width: 1024px) {
+      .lg\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .lg\:col-span-4 { grid-column: span 4 / span 4; }
+      .lg\:col-span-5 { grid-column: span 5 / span 5; }
+      .lg\:col-span-7 { grid-column: span 7 / span 7; }
+      .lg\:col-span-8 { grid-column: span 8 / span 8; }
+    }
+    .math-pill {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      padding: 1px 6px;
+      border-radius: 5px;
+      color: #7dd3fc;
+      font-size: 0.88em;
+      white-space: nowrap;
+    }
+    .dot-node {
+      cursor: pointer;
+      transition: filter 0.18s ease, opacity 0.18s ease;
+    }
+    .dot-node:hover circle {
+      stroke-width: 3px;
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.85));
+    }
+
+    .comp-box {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .comp-box:hover {
+      filter: brightness(1.25) drop-shadow(0 0 8px rgba(250, 204, 21, 0.5));
+    }
+    .wire-path {
+      transition: stroke-width 0.2s ease, opacity 0.2s ease;
+    }
+    .glow-badge {
+      box-shadow: 0 0 18px -4px rgba(56, 189, 248, 0.35);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-sky-500 selection:text-slate-950">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/90 bg-slate-950/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 via-indigo-500 to-emerald-500 p-0.5 shadow-lg shadow-sky-500/20">
+          <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-mono font-bold text-sky-400 text-sm">
+            3:2
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white">Dadda Multiplier Lab</h1>
+            <span class="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30">Interactive VLSI Guide</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Learn binary dot-tree reduction from scratch to full hardware synthesis</p>
+        </div>
+      </div>
+
+      <!-- Module Tabs -->
+      <nav class="flex flex-wrap items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800" aria-label="Learning Modules">
+        <button id="tab-btn-basics" data-tab="basics" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-sky-500 text-slate-950 font-semibold shadow-sm">
+          1. Basics &amp; Dots
+        </button>
+        <button id="tab-btn-rules" data-tab="rules" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+          2. Dadda Rules &amp; Quiz
+        </button>
+        <button id="tab-btn-sim" data-tab="sim" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+          3. Interactive Simulator
+        </button>
+        <button id="tab-btn-compare" data-tab="compare" class="nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+          4. Dadda vs. Wallace
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 1: BASICS & DOT NOTATION (FOR COMPLETE BEGINNERS)              -->
+    <!-- ===================================================================== -->
+    <section id="panel-basics" class="tab-panel space-y-6">
+      <!-- Hero Intro Banner -->
+      <div class="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-900 via-slate-900/95 to-indigo-950/40 p-5 sm:p-6 shadow-xl">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div class="lg:col-span-7 space-y-3">
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
+              <span>Step 1 of 4 • Zero Prior Knowledge Needed</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white leading-tight">
+              What problem does a Dadda Multiplier solve?
+            </h2>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              When a computer chip multiplies two <span class="text-sky-300 font-semibold">N-bit binary numbers</span>, generating the grid of partial products is super fast (just a single layer of <code class="mono text-amber-300">AND</code> gates). The bottleneck is <strong>adding all those rows together</strong>.
+            </p>
+            <p class="text-sm text-slate-300 leading-relaxed">
+              In 1965, Italian computer scientist <strong>Luigi Dadda</strong> asked: <em>"How can we squish a tall pile of partial-product bits down to just 2 rows using the absolute minimum number of adders and the fewest possible delay stages?"</em>
+            </p>
+            <div class="pt-2 flex flex-wrap gap-2.5">
+              <button id="btn-goto-rules" class="px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm transition shadow-lg shadow-sky-500/20">
+                Next: Learn the Magic Sequence →
+              </button>
+              <button id="btn-jump-sim" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs sm:text-sm border border-slate-700 transition">
+                Jump Straight to Full Simulator
+              </button>
+            </div>
+          </div>
+
+          <!-- 3 Core Concepts Summary Cards -->
+          <div class="lg:col-span-5 grid grid-cols-1 gap-3">
+            <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800/90 flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/40 text-sky-400 font-mono font-bold flex items-center justify-center shrink-0 text-sm">1</div>
+              <div>
+                <h3 class="text-xs font-semibold text-white uppercase tracking-wider">1 Dot = 1 Bit</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Instead of writing cluttered <code class="mono text-slate-300">a₂·b₁</code> labels everywhere, Dadda represents each partial-product bit as a single dot in its power-of-2 column (<span class="math-pill">2<sup>k</sup></span>).</p>
+              </div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800/90 flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 font-mono font-bold flex items-center justify-center shrink-0 text-sm">2</div>
+              <div>
+                <h3 class="text-xs font-semibold text-white uppercase tracking-wider">Adders Are "Dot Squishers"</h3>
+                <p class="text-xs text-slate-400 mt-0.5">A <strong>Full Adder (3:2 compressor)</strong> eats 3 dots in column <span class="math-pill">k</span> and outputs 1 Sum dot in column <span class="math-pill">k</span> + 1 Carry dot in column <span class="math-pill">k+1</span>. Net height in column <span class="math-pill">k</span> drops by 2!</p>
+              </div>
+            </div>
+            <div class="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800/90 flex items-start gap-3">
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono font-bold flex items-center justify-center shrink-0 text-sm">3</div>
+              <div>
+                <h3 class="text-xs font-semibold text-white uppercase tracking-wider">Stop at Height = 2</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Once every column has at most <strong>2 dots</strong>, we have just two binary numbers left—which a single fast Carry-Propagate Adder (CPA) sums at the end.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Concept 1A & 1B: From Long Multiplication to Dot Gravity + Interactive Compressor Playground -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Left Card: Interactive "Gravity Compact" Visualizer -->
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-mono uppercase tracking-wider text-sky-400">Interactive Concept A</span>
+              <span class="text-xs text-slate-400">4×4 Binary Multiplication</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-bold text-white">From Schoolbook Shift to Dadda's Dot Triangle</h3>
+            <p class="text-xs sm:text-sm text-slate-300">
+              In paper multiplication, each row shifts left because it represents a higher power of 2 (<span class="math-pill">2<sup>0</sup>, 2<sup>1</sup>, 2<sup>2</sup>, …</span>). Since additions in the same column <span class="math-pill">k</span> can happen in any order, we can push all dots straight to the top of their column!
+            </p>
+          </div>
+
+          <!-- Toggle Controls for Gravity Demo -->
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+            <div class="flex items-center gap-2">
+              <button id="btn-gravity-shifted" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 text-slate-950 transition">
+                1. Shifted Parallelogram
+              </button>
+              <button id="btn-gravity-compacted" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+                2. Compacted Dot Columns
+              </button>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono">
+              <span class="text-slate-400">Sample:</span>
+              <span class="text-sky-300">A=13 (1101₂)</span>
+              <span class="text-slate-500">×</span>
+              <span class="text-emerald-300">B=11 (1011₂)</span>
+            </div>
+          </div>
+
+          <!-- SVG Container for Gravity Demo -->
+          <div class="bg-slate-950 rounded-xl border border-slate-800/90 p-3 overflow-x-auto">
+            <svg id="svg-gravity-demo" viewBox="0 0 520 235" class="w-full h-auto min-w-[420px]"></svg>
+          </div>
+
+          <div id="gravity-caption" class="text-xs text-slate-300 bg-slate-950/60 border border-slate-800/80 rounded-xl p-3">
+            Notice how row <span class="math-pill">j</span> is shifted left by <span class="math-pill">j</span> columns: bit <code class="mono text-sky-300">aᵢ·bⱼ</code> sits in column <code class="mono text-amber-300">k = i + j</code> (weight <span class="math-pill">2<sup>i+j</sup></span>). Click <strong>"2. Compacted Dot Columns"</strong> to let gravity pack the dots!
+          </div>
+        </div>
+
+        <!-- Right Card: Interactive 3:2 Full Adder & 2:2 Half Adder Playground -->
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 flex flex-col justify-between space-y-4">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-mono uppercase tracking-wider text-amber-400">Interactive Concept B</span>
+              <span class="text-xs text-slate-400">Click Input Dots to Toggle 0 / 1</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-bold text-white">How Compressors Squish Column Height</h3>
+            <p class="text-xs sm:text-sm text-slate-300">
+              Dadda trees use only two building blocks. Click the input dots below to toggle their bits (<code class="mono text-sky-300">0</code> or <code class="mono text-emerald-300">1</code>) and watch how they compress dots in column <span class="math-pill">k</span>:
+            </p>
+          </div>
+
+          <!-- Compressor Mode Switch -->
+          <div class="flex items-center gap-2 bg-slate-950/80 p-2 rounded-xl border border-slate-800">
+            <button id="btn-comp-fa" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 transition">
+              Full Adder (FA • 3:2 Compressor)
+            </button>
+            <button id="btn-comp-ha" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">
+              Half Adder (HA • 2:2 Compressor)
+            </button>
+          </div>
+
+          <!-- Interactive Compressor Box -->
+          <div class="bg-slate-950 rounded-xl border border-slate-800/90 p-4 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+              <!-- Input Column k -->
+              <div class="sm:col-span-4 flex flex-col items-center p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <span class="text-[11px] font-mono text-slate-400 uppercase">Inputs in Col k (2ᵏ)</span>
+                <div class="flex items-center gap-3">
+                  <button id="comp-in-x" class="w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-sky-400 bg-sky-500/20 text-sky-200 hover:scale-105 transition flex flex-col items-center justify-center">
+                    <span>1</span>
+                  </button>
+                  <button id="comp-in-y" class="w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-sky-400 bg-sky-500/20 text-sky-200 hover:scale-105 transition flex flex-col items-center justify-center">
+                    <span>1</span>
+                  </button>
+                  <button id="comp-in-z" class="w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-sky-400 bg-sky-500/20 text-sky-200 hover:scale-105 transition flex flex-col items-center justify-center">
+                    <span>0</span>
+                  </button>
+                </div>
+                <span id="comp-in-desc" class="text-[11px] text-slate-400 font-mono">3 dots consumed in Col k</span>
+              </div>
+
+              <!-- Arrow & Gate Equations -->
+              <div class="sm:col-span-4 flex flex-col items-center justify-center text-center space-y-1.5">
+                <div id="comp-badge-title" class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-xs font-bold">
+                  Full Adder (3:2)
+                </div>
+                <div id="comp-eq-sum" class="text-[11px] font-mono text-slate-300">Sum = x ⊕ y ⊕ z</div>
+                <div id="comp-eq-cout" class="text-[11px] font-mono text-slate-400">Carry = xy + yz + xz</div>
+                <div class="text-xs font-semibold text-emerald-400" id="comp-math-check">
+                  1 + 1 + 0 = 2 (10₂)
+                </div>
+              </div>
+
+              <!-- Output Columns k+1 and k -->
+              <div class="sm:col-span-4 flex flex-col items-center p-3 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                <span class="text-[11px] font-mono text-slate-400 uppercase">Outputs (Next Stage)</span>
+                <div class="flex items-center gap-4">
+                  <div class="flex flex-col items-center">
+                    <div id="comp-out-cout" class="w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-rose-400 bg-rose-500/20 text-rose-200 flex items-center justify-center">
+                      1
+                    </div>
+                    <span class="text-[10px] font-mono text-rose-300 mt-1">Carry (Col k+1)</span>
+                  </div>
+                  <div class="flex flex-col items-center">
+                    <div id="comp-out-sum" class="w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-emerald-400 bg-emerald-500/20 text-emerald-200 flex items-center justify-center">
+                      0
+                    </div>
+                    <span class="text-[10px] font-mono text-emerald-300 mt-1">Sum (Col k)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Takeaway Rule Box -->
+            <div id="comp-takeaway" class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 leading-relaxed">
+              <strong>Key Accounting Rule:</strong> A <strong>Full Adder</strong> takes <strong>3 dots</strong> from Column <span class="math-pill">k</span> and leaves <strong>1 Sum dot</strong> in Column <span class="math-pill">k</span> (so Column <span class="math-pill">k</span> loses <strong>2 dots</strong>!), while sending <strong>1 Carry dot</strong> to Column <span class="math-pill">k+1</span>.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 2: DADDA'S GOLDEN RULES & INTERACTIVE QUIZ                     -->
+    <!-- ===================================================================== -->
+    <section id="panel-rules" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left 7 Cols: Dadda Sequence & 3-Step Algorithm -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6 space-y-4">
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-medium">
+              <span>Step 2 of 4 • The Dadda Secret Sauce</span>
+            </div>
+            <h2 class="text-xl font-bold text-white">The Magic Target Height Sequence (d<sub>j</sub>)</h2>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Work backward from the end! Before the final Carry-Propagate Adder, we want at most <strong><span class="math-pill">d<sub>1</sub> = 2</span> dots per column</strong>. Since each Full Adder reduces 3 dots into 2 dots (1 Sum + 1 Carry), working backward each earlier stage can be at most <span class="math-pill">⌊1.5 × d<sub>j</sub>⌋</span> tall:
+            </p>
+
+            <!-- Formula Highlight -->
+            <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+              <div class="font-mono text-sm sm:text-base text-sky-300 font-semibold">
+                d₁ = 2, &nbsp;&nbsp; dⱼ₊₁ = ⌊ 1.5 × dⱼ ⌋
+              </div>
+              <div class="text-xs text-slate-400">
+                Choose all targets <code class="mono text-amber-300">dⱼ &lt; N</code> (for an N×N multiplier)
+              </div>
+            </div>
+
+            <!-- Interactive Sequence Strip -->
+            <div class="grid grid-cols-4 sm:grid-cols-8 gap-2 pt-1">
+              <div class="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-center">
+                <div class="text-[10px] font-mono text-emerald-300">d₁ (Final)</div>
+                <div class="text-lg font-mono font-bold text-white">2</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-sky-500/15 border border-sky-500/40 text-center">
+                <div class="text-[10px] font-mono text-sky-300">d₂</div>
+                <div class="text-lg font-mono font-bold text-white">3</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-indigo-500/15 border border-indigo-500/40 text-center">
+                <div class="text-[10px] font-mono text-indigo-300">d₃</div>
+                <div class="text-lg font-mono font-bold text-white">4</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-purple-500/15 border border-purple-500/40 text-center">
+                <div class="text-[10px] font-mono text-purple-300">d₄</div>
+                <div class="text-lg font-mono font-bold text-white">6</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                <div class="text-[10px] font-mono text-slate-400">d₅</div>
+                <div class="text-lg font-mono font-bold text-slate-300">9</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                <div class="text-[10px] font-mono text-slate-400">d₆</div>
+                <div class="text-lg font-mono font-bold text-slate-300">13</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                <div class="text-[10px] font-mono text-slate-400">d₇</div>
+                <div class="text-lg font-mono font-bold text-slate-300">19</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+                <div class="text-[10px] font-mono text-slate-400">d₈</div>
+                <div class="text-lg font-mono font-bold text-slate-300">28</div>
+              </div>
+            </div>
+
+            <div class="text-xs text-slate-300 space-y-1.5 pt-1">
+              <p>• For a <strong>4×4 multiplier</strong> (max initial height = 4): targets below 4 are <code class="mono text-sky-300">d₂ = 3 → d₁ = 2</code> (<strong>2 stages</strong>).</p>
+              <p>• For a <strong>6×6 multiplier</strong> (max initial height = 6): targets below 6 are <code class="mono text-indigo-300">d₃ = 4 → d₂ = 3 → d₁ = 2</code> (<strong>3 stages</strong>).</p>
+              <p>• For an <strong>8×8 multiplier</strong> (max initial height = 8): targets below 8 are <code class="mono text-purple-300">d₄ = 6 → d₃ = 4 → d₂ = 3 → d₁ = 2</code> (<strong>4 stages</strong>).</p>
+            </div>
+          </div>
+
+          <!-- The Exact Column-by-Column Decision Rule -->
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 sm:p-6 space-y-4">
+            <h3 class="text-base sm:text-lg font-bold text-white">How to Reduce Any Stage (Target Height = d)</h3>
+            <p class="text-xs sm:text-sm text-slate-300">
+              Scan columns from <strong>right to left</strong> (<span class="math-pill">k = 0, 1, 2, …</span>). For column <span class="math-pill">k</span>, count its total height <code class="mono text-amber-300">H = (dots currently in col k) + (carries arriving from col k−1 in this stage)</code>:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+                <div class="text-xs font-mono font-bold text-emerald-400">Case 1: H ≤ d</div>
+                <div class="text-sm font-semibold text-white">Do Nothing!</div>
+                <p class="text-xs text-slate-400">The column is already at or below the stage limit <span class="math-pill">d</span>. Save hardware and pass all dots untouched to the next stage.</p>
+              </div>
+              <div class="p-3.5 rounded-xl bg-slate-950 border border-amber-500/40 space-y-1.5">
+                <div class="text-xs font-mono font-bold text-amber-400">Case 2: H − d ≥ 2</div>
+                <div class="text-sm font-semibold text-white">Add a Full Adder (FA)</div>
+                <p class="text-xs text-slate-400">Each FA reduces <span class="math-pill">H</span> by <strong>2</strong> (and sends +1 carry to col <span class="math-pill">k+1</span>). Repeat while <span class="math-pill">H − d ≥ 2</span>.</p>
+              </div>
+              <div class="p-3.5 rounded-xl bg-slate-950 border border-sky-500/40 space-y-1.5">
+                <div class="text-xs font-mono font-bold text-sky-400">Case 3: H − d == 1</div>
+                <div class="text-sm font-semibold text-white">Add 1 Half Adder (HA)</div>
+                <p class="text-xs text-slate-400">We only need to shave off <strong>1 dot</strong> so <span class="math-pill">H</span> lands right on <span class="math-pill">d</span> (and sends +1 carry to col <span class="math-pill">k+1</span>).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Interactive "Be the Dadda Architect" Mini-Game -->
+        <div class="lg:col-span-5 rounded-2xl border border-sky-500/30 bg-gradient-to-b from-slate-900 to-slate-950 p-5 sm:p-6 flex flex-col justify-between space-y-4 shadow-xl">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-mono font-semibold">Practice Challenge</span>
+              <span id="quiz-score-badge" class="text-xs font-mono text-slate-400">Score: 0 / 0</span>
+            </div>
+            <h3 class="text-lg font-bold text-white">You Be the Dadda Hardware Designer!</h3>
+            <p class="text-xs text-slate-300">
+              Test your intuition on a single column before running the full tree simulator. How many Full Adders (FA) and Half Adders (HA) should Dadda place in this column?
+            </p>
+          </div>
+
+          <!-- Scenario Visual Box -->
+          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+              <div>
+                <div class="text-[11px] font-mono text-slate-400 uppercase">Stage Target Ceiling (d)</div>
+                <div id="quiz-target-d" class="text-2xl font-mono font-bold text-sky-400">d = 3</div>
+              </div>
+              <div class="text-right">
+                <div class="text-[11px] font-mono text-slate-400 uppercase">Total Column Height (H)</div>
+                <div id="quiz-total-h" class="text-2xl font-mono font-bold text-amber-300">H = 6</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div class="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                <span class="text-slate-400">Existing Dots:</span>
+                <span id="quiz-existing-dots" class="text-white font-bold ml-1">5</span>
+              </div>
+              <div class="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                <span class="text-slate-400">Carries from k−1:</span>
+                <span id="quiz-incoming-carries" class="text-rose-300 font-bold ml-1">+1</span>
+              </div>
+            </div>
+
+            <!-- Visual Dot Stack Preview -->
+            <div id="quiz-dot-preview" class="flex flex-wrap items-center gap-2 py-2 px-3 rounded-lg bg-slate-900/60 border border-slate-800/80 min-h-[46px]"></div>
+          </div>
+
+          <!-- User Controls: Choose FAs and HAs -->
+          <div class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col items-center">
+                <span class="text-xs font-semibold text-amber-300">Full Adders (FA)</span>
+                <span class="text-[10px] text-slate-400 mb-2">−2 height each</span>
+                <div class="flex items-center gap-3">
+                  <button id="quiz-fa-dec" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold">−</button>
+                  <span id="quiz-fa-val" class="text-lg font-mono font-bold text-white w-5 text-center">0</span>
+                  <button id="quiz-fa-inc" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold">+</button>
+                </div>
+              </div>
+              <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex flex-col items-center">
+                <span class="text-xs font-semibold text-sky-300">Half Adders (HA)</span>
+                <span class="text-[10px] text-slate-400 mb-2">−1 height each</span>
+                <div class="flex items-center gap-3">
+                  <button id="quiz-ha-dec" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold">−</button>
+                  <span id="quiz-ha-val" class="text-lg font-mono font-bold text-white w-5 text-center">0</span>
+                  <button id="quiz-ha-inc" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-mono font-bold">+</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs font-mono px-1">
+              <span class="text-slate-400">Resulting Column Height:</span>
+              <span id="quiz-resulting-h" class="font-bold text-white">6 (Target: ≤ 3)</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="btn-quiz-check" class="flex-1 py-2.5 px-4 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm transition">
+                Check My Design
+              </button>
+              <button id="btn-quiz-next" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs sm:text-sm border border-slate-700 transition">
+                New Column ↻
+              </button>
+            </div>
+
+            <div id="quiz-feedback" class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+              Adjust the FA and HA counters so the column height drops to <strong class="text-sky-300">d</strong> using the fewest gates, then click <strong>Check My Design</strong>!
+            </div>
+          </div>
+
+          <button id="btn-rules-to-sim" class="w-full py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 font-semibold text-xs sm:text-sm transition">
+            Ready! Launch Full Interactive Dadda Simulator →
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 3: INTERACTIVE DADDA MULTIPLIER SIMULATOR (4x4, 6x6, 8x8)      -->
+    <!-- ===================================================================== -->
+    <section id="panel-sim" class="tab-panel hidden space-y-5">
+
+      <!-- Top Control Bar: Bit-Width, Operands A & B, Presets -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 sm:p-5 space-y-4 shadow-lg">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+
+          <!-- Bit Width Selector -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono uppercase tracking-wider text-slate-400">Multiplier Size:</span>
+            <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800">
+              <button data-bits="4" class="bit-width-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-sky-500 text-slate-950 transition">4×4 (Beginner)</button>
+              <button data-bits="6" class="bit-width-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white transition">6×6 (Medium)</button>
+              <button data-bits="8" class="bit-width-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white transition">8×8 (Advanced)</button>
+            </div>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs font-mono text-slate-400 mr-1">Presets:</span>
+            <button data-preset="textbook" class="preset-btn px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Textbook (13 × 11)</button>
+            <button data-preset="max" class="preset-btn px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">All 1s (Max Carries)</button>
+            <button data-preset="alt" class="preset-btn px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 transition">Alternating Bits</button>
+            <button data-preset="random" class="preset-btn px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 transition">Random 🎲</button>
+          </div>
+        </div>
+
+        <!-- Operands A, B, and Expected Product P -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 pt-1">
+          <!-- Operand A -->
+          <div class="md:col-span-4 p-3.5 rounded-xl bg-slate-950 border border-slate-800/90 space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="input-op-a" class="text-xs font-mono font-bold text-sky-400 uppercase">Multiplicand A</label>
+              <span id="label-a-hex" class="text-xs font-mono text-slate-400">0xD • 1101₂</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="input-op-a" type="number" min="0" max="15" value="13" class="w-24 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-sky-500" />
+              <div id="bits-op-a" class="flex items-center gap-1 flex-wrap"></div>
+            </div>
+          </div>
+
+          <!-- Operand B -->
+          <div class="md:col-span-4 p-3.5 rounded-xl bg-slate-950 border border-slate-800/90 space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="input-op-b" class="text-xs font-mono font-bold text-emerald-400 uppercase">Multiplier B</label>
+              <span id="label-b-hex" class="text-xs font-mono text-slate-400">0xB • 1011₂</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="input-op-b" type="number" min="0" max="15" value="11" class="w-24 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-sm focus:outline-none focus:border-emerald-500" />
+              <div id="bits-op-b" class="flex items-center gap-1 flex-wrap"></div>
+            </div>
+          </div>
+
+          <!-- Live Product Result Summary -->
+          <div class="md:col-span-4 p-3.5 rounded-xl bg-gradient-to-br from-slate-950 via-slate-950 to-sky-950/30 border border-sky-500/30 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-bold text-amber-300 uppercase">Product P = A × B</span>
+              <span id="label-p-hex" class="text-xs font-mono text-sky-300">0x8F</span>
+            </div>
+            <div class="flex items-baseline justify-between gap-2 my-1">
+              <div id="label-p-dec" class="text-xl sm:text-2xl font-mono font-extrabold text-white">13 × 11 = 143</div>
+            </div>
+            <div id="label-p-bin" class="text-xs font-mono text-emerald-300 tracking-wider break-all">10001111₂</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stage Timeline & Playback Controls -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <!-- Stage Stepper Buttons -->
+          <div id="stage-stepper-bar" class="flex flex-wrap items-center gap-1.5"></div>
+
+          <!-- Playback & Micro-Step Controls -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btn-prev-stage" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+              ◀ Prev Stage
+            </button>
+            <button id="btn-play-auto" class="px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition shadow-sm">
+              ▶ Auto-Play Stages
+            </button>
+            <button id="btn-next-stage" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+              Next Stage ▶
+            </button>
+          </div>
+        </div>
+
+        <!-- Column-by-Column Micro-Stepper (Visible on Reduction Stages) -->
+        <div id="micro-step-bar" class="hidden pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 text-[11px] font-mono font-semibold">Column Scanner</span>
+            <span id="micro-step-label" class="text-xs text-slate-300 font-mono">Viewing Full Stage (All Columns k = 0..6)</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="btn-col-all" class="px-2.5 py-1 rounded bg-sky-500/20 border border-sky-500/40 text-sky-300 text-xs font-mono">All Columns</button>
+            <button id="btn-col-prev" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono border border-slate-700">← Col k−1</button>
+            <button id="btn-col-next" class="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs font-mono">Scan Next Col k →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Simulator Split Layout: Left = Interactive Dot Diagram SVG, Right = Live Stage & Node Inspector -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+        <!-- Left 8 Cols: Interactive Dot Diagram Canvas -->
+        <div class="lg:col-span-8 rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-3 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div>
+              <h3 id="sim-canvas-title" class="text-base font-bold text-white">Stage 1: Dadda Reduction to Target Height d = 3</h3>
+              <p id="sim-canvas-subtitle" class="text-xs text-slate-400">Hover or click any dot or FA/HA compressor box to inspect its exact boolean math &amp; wires.</p>
+            </div>
+            <!-- Legend -->
+            <div class="flex flex-wrap items-center gap-3 text-[11px] font-mono">
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-400 inline-block"></span>Bit=1</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-800 border border-slate-500 inline-block"></span>Bit=0</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-500/30 border border-amber-400 inline-block"></span>FA (3:2)</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-sky-500/30 border border-sky-400 inline-block"></span>HA (2:2)</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border-2 border-emerald-400 inline-block"></span>Sum</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full border-2 border-rose-400 inline-block"></span>Carry</span>
+            </div>
+          </div>
+
+          <!-- Interactive SVG Diagram Wrapper -->
+          <div class="bg-slate-950 rounded-xl border border-slate-800/90 p-2 sm:p-3 overflow-x-auto">
+            <svg id="svg-dadda-main" viewBox="0 0 780 460" class="w-full h-auto min-w-[580px] select-none"></svg>
+          </div>
+
+          <!-- All-Stages Mini Overview Strip -->
+          <div class="pt-1">
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+              <span class="font-mono uppercase tracking-wider">Hardware Summary Across This Multiplier</span>
+              <span id="sim-total-hw-summary" class="font-mono text-sky-300">Total Tree: 3 FAs + 3 HAs + 6-bit CPA</span>
+            </div>
+            <div id="sim-column-table-wrap" class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/70 p-2.5"></div>
+          </div>
+        </div>
+
+        <!-- Right 4 Cols: Algorithm Narrator & Signal Inspector -->
+        <div class="lg:col-span-4 space-y-4">
+
+          <!-- Live Step Narrator Card -->
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-sky-400">Algorithm Narrator</span>
+              <span id="narrator-stage-pill" class="px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 text-[11px] font-mono">Target d = 3</span>
+            </div>
+            <h4 id="narrator-heading" class="text-sm sm:text-base font-bold text-white">How This Stage Works</h4>
+            <div id="narrator-body" class="text-xs text-slate-300 space-y-2 leading-relaxed max-h-[290px] overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- Interactive Node / Gate Inspector Card -->
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-amber-400">Signal &amp; Gate Inspector</span>
+              <span class="text-[11px] text-slate-400">Click or hover any element</span>
+            </div>
+            <div id="inspector-content" class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2.5">
+              <div class="text-slate-400">
+                Hover over or click any <strong>dot</strong> or <strong>FA/HA compressor box</strong> in the diagram to inspect:
+                <ul class="list-disc list-inside mt-1.5 space-y-1 text-slate-300">
+                  <li>Exact origin (<code class="mono text-sky-300">aᵢ · bⱼ</code>, Sum, or Carry)</li>
+                  <li>Column weight (<span class="math-pill">2<sup>k</sup></span>) and live bit value (<code class="mono">0</code> or <code class="mono">1</code>)</li>
+                  <li>Boolean gate equations &amp; carry destination</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Final Carry-Propagate Adder (CPA) Breakdown Card -->
+          <div class="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-emerald-400">Final 2-Row Addition (CPA)</span>
+              <span class="text-[11px] font-mono text-slate-400">Stage Final</span>
+            </div>
+            <p class="text-xs text-slate-400">
+              After the Dadda tree reaches height <span class="math-pill">d<sub>1</sub> = 2</span>, the remaining two rows are added by a fast Carry-Propagate Adder:
+            </p>
+            <div id="cpa-bit-alignment" class="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-1 overflow-x-auto"></div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 4: ADVANCED VLSI COMPARISON (DADDA VS. WALLACE VS. ARRAY)      -->
+    <!-- ===================================================================== -->
+    <section id="panel-compare" class="tab-panel hidden space-y-6">
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-medium">
+              <span>Step 4 of 4 • Advanced VLSI Architecture Comparison</span>
+            </div>
+            <h2 class="text-xl font-bold text-white">Why Do Chip Designers Prefer Dadda Over Wallace Trees?</h2>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-3xl">
+              Both <strong>Wallace (1964)</strong> and <strong>Dadda (1965)</strong> reduce partial products in logarithmic <span class="math-pill">O(log<sub>1.5</sub> N)</span> stages. However, Wallace greedily compresses <em>every</em> group of 3 or 2 dots as early as possible, whereas Dadda compresses <em>only</em> enough to meet the target ceiling <span class="math-pill">d<sub>j</sub></span>. Compare their exact hardware synthesis below!
+            </p>
+          </div>
+
+          <!-- Size Selector for Comparison -->
+          <div class="flex items-center gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+            <span class="text-xs font-mono text-slate-400 px-2">Compare N×N:</span>
+            <button data-comp-n="4" class="comp-n-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-sky-500 text-slate-950">4×4</button>
+            <button data-comp-n="6" class="comp-n-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white">6×6</button>
+            <button data-comp-n="8" class="comp-n-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white">8×8</button>
+            <button data-comp-n="12" class="comp-n-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white">12×12</button>
+            <button data-comp-n="16" class="comp-n-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white">16×16</button>
+          </div>
+        </div>
+
+        <!-- KPI Metric Cards for Selected N -->
+        <div id="compare-kpi-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2"></div>
+
+        <!-- Stage-by-Stage Hardware Breakdown (Dadda vs Wallace) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
+          <div class="p-4 rounded-xl bg-slate-950 border border-sky-500/30 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm sm:text-base font-bold text-sky-400">Dadda Tree Stage Profile</h3>
+              <span class="text-xs font-mono text-slate-400">Minimal Lazy Reduction</span>
+            </div>
+            <div id="dadda-stage-breakdown" class="space-y-2.5 text-xs"></div>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950 border border-purple-500/30 space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm sm:text-base font-bold text-purple-400">Wallace Tree Stage Profile</h3>
+              <span class="text-xs font-mono text-slate-400">Eager Maximum Reduction</span>
+            </div>
+            <div id="wallace-stage-breakdown" class="space-y-2.5 text-xs"></div>
+          </div>
+        </div>
+
+        <!-- Full Scaling Table (N = 4, 6, 8, 12, 16) -->
+        <div class="pt-2 space-y-2">
+          <h3 class="text-sm sm:text-base font-bold text-white">Complete VLSI Scaling Table (Dadda vs. Wallace vs. Carry-Save Array)</h3>
+          <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="border-b border-slate-800 bg-slate-900/90 text-slate-300">
+                  <th class="py-2.5 px-3">Multiplier Size</th>
+                  <th class="py-2.5 px-3">Reduction Stages</th>
+                  <th class="py-2.5 px-3 text-sky-300">Dadda Tree (FA / HA)</th>
+                  <th class="py-2.5 px-3 text-purple-300">Wallace Tree (FA / HA)</th>
+                  <th class="py-2.5 px-3 text-emerald-300">Tree Gate Savings</th>
+                  <th class="py-2.5 px-3">Final CPA Width (Dadda vs Wallace)</th>
+                  <th class="py-2.5 px-3">Array Multiplier Delay Stages</th>
+                </tr>
+              </thead>
+              <tbody id="vlsi-scaling-tbody" class="divide-y divide-slate-800/70"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950/90 py-4 px-4 sm:px-6 text-center text-xs text-slate-500">
+    Interactive Dadda Multiplier Lab • Exact Dadda (1965) &amp; Wallace (1964) Tree Synthesis Engine • Built for Digital Logic &amp; VLSI Education
+  </footer>
+
+  <!-- ======================================================================= -->
+  <!-- APPLICATION LOGIC & EXACT DADDA / WALLACE SYNTHESIS ENGINE              -->
+  <!-- ======================================================================= -->
+  <script>
+    // =========================================================================
+    // 1. GLOBAL STATE
+    // =========================================================================
+    const state = {
+      activeTab: 'basics',
+      gravityCompacted: false,
+      compMode: 'FA', // 'FA' or 'HA'
+      compInputs: { x: 1, y: 1, z: 0 },
+
+      // Module 2 Quiz State
+      quiz: {
+        d: 3,
+        existing: 5,
+        carries: 1,
+        userFA: 0,
+        userHA: 0,
+        score: 0,
+        attempts: 0
+      },
+
+      // Module 3 Simulator State
+      sim: {
+        N: 4,
+        opA: 13,
+        opB: 11,
+        stageIdx: 2,      // 0 = Shifted PP, 1 = Compacted Cols, 2..S+1 = Reduction Stages, S+2 = Final CPA
+        focusedCol: null, // null = all columns, or integer 0..2N-2
+        selectedItem: null,
+        autoPlayTimer: null
+      },
+
+      // Module 4 Comparison State
+      compareN: 8
+    };
+
+    // =========================================================================
+    // 2. EXACT DADDA & WALLACE HARDWARE SYNTHESIS ALGORITHMS
+    // =========================================================================
+    function getDaddaTargets(N) {
+      // d_1 = 2, d_{j+1} = floor(1.5 * d_j)
+      const seq = [2];
+      while (true) {
+        const next = Math.floor(1.5 * seq[seq.length - 1]);
+        if (next >= N) break;
+        seq.push(next);
+      }
+      // Reverse so we go from largest target < N down to 2
+      return seq.reverse();
+    }
+
+    /**
+     * Builds the complete bit-accurate Dadda Multiplier trace for N bits and operands A, B.
+     * Tracks every individual dot (id, col, bit value, source type, label, parent compressor)
+     * and every Full Adder (FA) and Half Adder (HA) placed in each stage.
+     */
+    function simulateDadda(N, opA, opB) {
+      const numCols = 2 * N - 1; // columns 0 .. 2N-2
+      const aBits = [];
+      const bBits = [];
+      for (let i = 0; i < N; i++) {
+        aBits.push((opA >> i) & 1);
+        bBits.push((opB >> i) & 1);
+      }
+
+      // 1. Shifted Partial Products (Stage 0) & Compacted Initial Columns (Stage 1)
+      let initialCols = Array.from({ length: numCols }, () => []);
+      const shiftedRows = [];
+
+      for (let j = 0; j < N; j++) {
+        const rowDots = [];
+        for (let i = 0; i < N; i++) {
+          const col = i + j;
+          const val = aBits[i] & bBits[j];
+          const dot = {
+            id: `pp_a${i}_b${j}`,
+            col: col,
+            row: j,
+            i: i,
+            j: j,
+            val: val,
+            kind: 'pp', // 'pp' | 'sum' | 'carry'
+            label: `a${i}·b${j}`,
+            formula: `a[${i}] (${aBits[i]}) AND b[${j}] (${bBits[j]}) = ${val}`,
+            parentCompId: null
+          };
+          rowDots.push(dot);
+          initialCols[col].push({ ...dot });
+        }
+        shiftedRows.push(rowDots);
+      }
+
+      const targets = getDaddaTargets(N);
+      const reductionStages = [];
+      let currentCols = initialCols.map(colArr => colArr.map(d => ({ ...d })));
+
+      let totalFA = 0;
+      let totalHA = 0;
+
+      targets.forEach((targetD, sIdx) => {
+        const stageNum = sIdx + 1;
+        const nextCols = Array.from({ length: numCols }, () => []);
+        const colDetails = [];
+        const compressors = [];
+        let stageFA = 0;
+        let stageHA = 0;
+
+        // Carries generated in column k-1 during this stage arrive in column k for next stage
+        let incomingCarries = Array.from({ length: numCols }, () => []);
+
+        for (let k = 0; k < numCols; k++) {
+          const dotsInCol = currentCols[k];
+          const carriesIn = incomingCarries[k];
+          // Total height H that will exist in column k if we don't compress column k
+          let H = dotsInCol.length + carriesIn.length;
+          const initialH = H;
+
+          let faCount = 0;
+          let haCount = 0;
+          let usedDotIdx = 0;
+          const colComps = [];
+
+          while (H > targetD) {
+            if (H - targetD >= 2) {
+              // Allocate a Full Adder (3:2 compressor) using 3 dots from currentCols[k]
+              const inDots = dotsInCol.slice(usedDotIdx, usedDotIdx + 3);
+              usedDotIdx += 3;
+              H -= 2;
+              faCount++;
+              stageFA++;
+              totalFA++;
+
+              const compId = `S${stageNum}_C${k}_FA${faCount}`;
+              const sumVal = inDots[0].val ^ inDots[1].val ^ inDots[2].val;
+              const coutVal = (inDots[0].val & inDots[1].val) | (inDots[1].val & inDots[2].val) | (inDots[0].val & inDots[2].val);
+
+              const sumDot = {
+                id: `${compId}_sum`,
+                col: k,
+                val: sumVal,
+                kind: 'sum',
+                compType: 'FA',
+                label: `FA_S (k=${k})`,
+                formula: `${inDots[0].label}(${inDots[0].val}) ⊕ ${inDots[1].label}(${inDots[1].val}) ⊕ ${inDots[2].label}(${inDots[2].val}) = ${sumVal}`,
+                parentCompId: compId
+              };
+              const carryDot = {
+                id: `${compId}_cout`,
+                col: k + 1,
+                val: coutVal,
+                kind: 'carry',
+                compType: 'FA',
+                label: `FA_C (from k=${k})`,
+                formula: `Carry(${inDots[0].label}=${inDots[0].val}, ${inDots[1].label}=${inDots[1].val}, ${inDots[2].label}=${inDots[2].val}) = ${coutVal}`,
+                parentCompId: compId
+              };
+
+              const compObj = {
+                id: compId,
+                stage: stageNum,
+                col: k,
+                type: 'FA',
+                inputs: inDots,
+                sumDot,
+                carryDot
+              };
+              inDots.forEach(d => { d.consumedBy = compId; d.consumedType = 'FA'; });
+
+              colComps.push(compObj);
+              compressors.push(compObj);
+              if (k + 1 < numCols) {
+                incomingCarries[k + 1].push(carryDot);
+              }
+            } else {
+              // H - targetD === 1 -> Allocate a Half Adder (2:2 compressor)
+              const inDots = dotsInCol.slice(usedDotIdx, usedDotIdx + 2);
+              usedDotIdx += 2;
+              H -= 1;
+              haCount++;
+              stageHA++;
+              totalHA++;
+
+              const compId = `S${stageNum}_C${k}_HA${haCount}`;
+              const sumVal = inDots[0].val ^ inDots[1].val;
+              const coutVal = inDots[0].val & inDots[1].val;
+
+              const sumDot = {
+                id: `${compId}_sum`,
+                col: k,
+                val: sumVal,
+                kind: 'sum',
+                compType: 'HA',
+                label: `HA_S (k=${k})`,
+                formula: `${inDots[0].label}(${inDots[0].val}) ⊕ ${inDots[1].label}(${inDots[1].val}) = ${sumVal}`,
+                parentCompId: compId
+              };
+              const carryDot = {
+                id: `${compId}_cout`,
+                col: k + 1,
+                val: coutVal,
+                kind: 'carry',
+                compType: 'HA',
+                label: `HA_C (from k=${k})`,
+                formula: `${inDots[0].label}(${inDots[0].val}) AND ${inDots[1].label}(${inDots[1].val}) = ${coutVal}`,
+                parentCompId: compId
+              };
+
+              const compObj = {
+                id: compId,
+                stage: stageNum,
+                col: k,
+                type: 'HA',
+                inputs: inDots,
+                sumDot,
+                carryDot
+              };
+              inDots.forEach(d => { d.consumedBy = compId; d.consumedType = 'HA'; });
+
+              colComps.push(compObj);
+              compressors.push(compObj);
+              if (k + 1 < numCols) {
+                incomingCarries[k + 1].push(carryDot);
+              }
+            }
+          }
+
+          // Build the resulting column k for the next stage:
+          // Order: 1) Sum outputs of compressors in col k, 2) Carry outputs arriving from col k-1, 3) Untouched pass-through dots
+          const passThroughDots = dotsInCol.slice(usedDotIdx).map(d => ({ ...d, consumedBy: null, consumedType: null }));
+          colComps.forEach(c => nextCols[k].push({ ...c.sumDot }));
+          carriesIn.forEach(c => nextCols[k].push({ ...c }));
+          passThroughDots.forEach(d => nextCols[k].push(d));
+
+          colDetails.push({
+            col: k,
+            existingCount: dotsInCol.length,
+            incomingCarryCount: carriesIn.length,
+            totalBefore: initialH,
+            targetD: targetD,
+            faCount,
+            haCount,
+            finalCount: nextCols[k].length,
+            compressors: colComps
+          });
+        }
+
+        reductionStages.push({
+          stageNum,
+          targetD,
+          inputCols: currentCols.map(c => c.map(d => ({ ...d }))),
+          outputCols: nextCols.map(c => c.map(d => ({ ...d }))),
+          colDetails,
+          compressors,
+          stageFA,
+          stageHA
+        });
+
+        currentCols = nextCols.map(c => c.map(d => ({ ...d })));
+      });
+
+      // Final 2-Row Carry-Propagate Adder (CPA)
+      const finalTwoRows = [
+        Array.from({ length: numCols }, (_, k) => currentCols[k][0] || null),
+        Array.from({ length: numCols }, (_, k) => currentCols[k][1] || null)
+      ];
+
+      const productBits = [];
+      const cpaCarries = [0];
+      for (let k = 0; k < numCols; k++) {
+        const b0 = finalTwoRows[0][k] ? finalTwoRows[0][k].val : 0;
+        const b1 = finalTwoRows[1][k] ? finalTwoRows[1][k].val : 0;
+        const cin = cpaCarries[k];
+        const sum = b0 ^ b1 ^ cin;
+        const cout = (b0 & b1) | (b1 & cin) | (b0 & cin);
+        productBits.push(sum);
+        cpaCarries.push(cout);
+      }
+      if (cpaCarries[numCols] > 0) {
+        productBits.push(cpaCarries[numCols]);
+      } else {
+        productBits.push(0);
+      }
+
+      // Compute CPA width (columns with >= 2 dots or ripple)
+      let cpaCols = 0;
+      for (let k = 0; k < numCols; k++) {
+        if (currentCols[k].length >= 2 || (k > 0 && k < numCols)) {
+          if (k >= 1) cpaCols++;
+        }
+      }
+
+      return {
+        N,
+        opA,
+        opB,
+        product: opA * opB,
+        aBits,
+        bBits,
+        numCols,
+        shiftedRows,
+        initialCols,
+        targets,
+        reductionStages,
+        finalCols: currentCols,
+        finalTwoRows,
+        productBits,
+        cpaCarries,
+        totalFA,
+        totalHA,
+        cpaWidth: 2 * N - 2
+      };
+    }
+
+    /**
+     * Exact Wallace Tree synthesis for hardware comparison (Module 4)
+     * In each stage, Wallace groups all existing dots in each column k into floor(h/3) FAs
+     * and floor((h%3)/2) HAs simultaneously (carries go to next stage's column k+1).
+     */
+    function simulateWallaceCounts(N) {
+      let numCols = 2 * N - 1;
+      let heights = Array.from({ length: numCols }, (_, k) => (k < N ? k + 1 : 2 * N - 1 - k));
+      let stages = [];
+      let totalFA = 0;
+      let totalHA = 0;
+      let stageNum = 0;
+
+      while (Math.max(...heights) > 2) {
+        stageNum++;
+        const nextHeights = Array(heights.length + 2).fill(0);
+        let stageFA = 0;
+        let stageHA = 0;
+
+        for (let k = 0; k < heights.length; k++) {
+          const h = heights[k];
+          const fa = Math.floor(h / 3);
+          const rem = h % 3;
+          const ha = rem === 2 ? 1 : 0;
+          const pass = rem === 2 ? 0 : rem;
+
+          stageFA += fa;
+          stageHA += ha;
+          totalFA += fa;
+          totalHA += ha;
+
+          nextHeights[k] += fa + ha + pass;
+          if (fa + ha > 0) {
+            nextHeights[k + 1] += fa + ha;
+          }
+        }
+        while (nextHeights.length > numCols && nextHeights[nextHeights.length - 1] === 0) {
+          nextHeights.pop();
+        }
+        heights = nextHeights;
+        stages.push({
+          stageNum,
+          maxHeightAfter: Math.max(...heights),
+          stageFA,
+          stageHA,
+          heights: [...heights]
+        });
+      }
+
+      // Count how many columns have > 1 dot for CPA width
+      const multiBitCols = heights.filter(h => h >= 2).length;
+      return {
+        N,
+        numStages: stages.length,
+        stages,
+        totalFA,
+        totalHA,
+        cpaWidth: multiBitCols
+      };
+    }
+
+    function simulateDaddaCounts(N) {
+      const numCols = 2 * N - 1;
+      let heights = Array.from({ length: numCols }, (_, k) => (k < N ? k + 1 : 2 * N - 1 - k));
+      const targets = getDaddaTargets(N);
+      const stages = [];
+      let totalFA = 0;
+      let totalHA = 0;
+
+      targets.forEach((d, idx) => {
+        const nextHeights = Array(numCols).fill(0);
+        let incomingCarry = 0;
+        let stageFA = 0;
+        let stageHA = 0;
+
+        for (let k = 0; k < numCols; k++) {
+          let H = heights[k] + incomingCarry;
+          let fa = 0;
+          let ha = 0;
+          while (H > d) {
+            if (H - d >= 2) {
+              fa++;
+              H -= 2;
+            } else {
+              ha++;
+              H -= 1;
+            }
+          }
+          stageFA += fa;
+          stageHA += ha;
+          totalFA += fa;
+          totalHA += ha;
+          nextHeights[k] = H;
+          incomingCarry = fa + ha;
+        }
+        heights = nextHeights;
+        stages.push({
+          stageNum: idx + 1,
+          targetD: d,
+          stageFA,
+          stageHA,
+          heights: [...heights]
+        });
+      });
+
+      const multiBitCols = heights.filter(h => h >= 2).length;
+      return {
+        N,
+        numStages: stages.length,
+        stages,
+        totalFA,
+        totalHA,
+        cpaWidth: multiBitCols
+      };
+    }
+
+    // =========================================================================
+    // 3. MODULE 1: BASICS & GRAVITY / COMPRESSOR PLAYGROUND RENDERERS
+    // =========================================================================
+    function renderGravityDemo() {
+      const svg = document.getElementById('svg-gravity-demo');
+      const caption = document.getElementById('gravity-caption');
+      if (!svg) return;
+
+      const A = 13; // 1101
+      const B = 11; // 1011
+      const aBits = [1, 0, 1, 1]; // a0..a3
+      const bBits = [1, 1, 0, 1]; // b0..b3
+
+      const colX = k => 440 - k * 62; // k=0 on right (440), k=6 on left (68)
+      let html = '';
+
+      // Column header pills (k = 6 down to 0)
+      for (let k = 0; k <= 6; k++) {
+        const x = colX(k);
+        html += `
+          <g>
+            <line x1="${x}" y1="36" x2="${x}" y2="215" stroke="#1e293b" stroke-dasharray="3,3" stroke-width="1" />
+            <rect x="${x - 24}" y="6" width="48" height="24" rx="6" fill="#0f172a" stroke="#334155" />
+            <text x="${x}" y="22" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="JetBrains Mono">k=${k} (2^${k})</text>
+          </g>
+        `;
+      }
+
+      // Compute dot positions in shifted mode vs compacted mode
+      const colCounts = Array(7).fill(0);
+      for (let j = 0; j < 4; j++) {
+        for (let i = 0; i < 4; i++) {
+          const k = i + j;
+          const val = aBits[i] & bBits[j];
+          const x = colX(k);
+          const rowIndex = state.gravityCompacted ? colCounts[k] : j;
+          colCounts[k]++;
+          const y = 58 + rowIndex * 36;
+
+          const fill = val ? '#38bdf8' : '#1e293b';
+          const stroke = val ? '#bae6fd' : '#64748b';
+          const textFill = val ? '#020617' : '#cbd5e1';
+
+          html += `
+            <g>
+              <circle cx="${x}" cy="${y}" r="13" fill="${fill}" stroke="${stroke}" stroke-width="2" />
+              <text x="${x}" y="${y + 4}" text-anchor="middle" fill="${textFill}" font-size="10" font-weight="700" font-family="JetBrains Mono">a${i}b${j}</text>
+            </g>
+          `;
+        }
+      }
+
+      // Column height badges at bottom
+      const heights = [1, 2, 3, 4, 3, 2, 1];
+      for (let k = 0; k <= 6; k++) {
+        const x = colX(k);
+        const h = heights[k];
+        const badgeColor = h > 3 ? '#f59e0b' : '#38bdf8';
+        html += `
+          <text x="${x}" y="228" text-anchor="middle" fill="${badgeColor}" font-size="11" font-weight="700" font-family="JetBrains Mono">h=${h}</text>
+        `;
+      }
+
+      svg.innerHTML = html;
+
+      const btnShifted = document.getElementById('btn-gravity-shifted');
+      const btnCompacted = document.getElementById('btn-gravity-compacted');
+      if (state.gravityCompacted) {
+        btnCompacted.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 text-slate-950 transition';
+        btnShifted.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+        caption.innerHTML = '<strong>Compacted Dot Triangle:</strong> All dots slide straight up to the top of their column! Now you can clearly see the column heights: <code class="mono text-sky-300">1, 2, 3, 4, 3, 2, 1</code>. Only column <code class="mono text-amber-300">k=3 (h=4)</code> exceeds Dadda\'s first target <span class="math-pill">d<sub>2</sub> = 3</span>!';
+      } else {
+        btnShifted.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-500 text-slate-950 transition';
+        btnCompacted.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+        caption.innerHTML = 'Notice how row <span class="math-pill">j</span> is shifted left by <span class="math-pill">j</span> columns: bit <code class="mono text-sky-300">aᵢ·bⱼ</code> sits in column <code class="mono text-amber-300">k = i + j</code> (weight <span class="math-pill">2<sup>i+j</sup></span>). Click <strong>"2. Compacted Dot Columns"</strong> to let gravity pack the dots!';
+      }
+    }
+
+    function renderCompressorPlayground() {
+      const { x, y, z } = state.compInputs;
+      const isFA = state.compMode === 'FA';
+
+      const btnFA = document.getElementById('btn-comp-fa');
+      const btnHA = document.getElementById('btn-comp-ha');
+      const btnX = document.getElementById('comp-in-x');
+      const btnY = document.getElementById('comp-in-y');
+      const btnZ = document.getElementById('comp-in-z');
+
+      btnFA.className = isFA
+        ? 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-amber-500 text-slate-950 transition'
+        : 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+      btnHA.className = !isFA
+        ? 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-sky-500 text-slate-950 transition'
+        : 'flex-1 py-1.5 px-3 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition';
+
+      const styleBitBtn = (el, bitVal) => {
+        el.innerHTML = `<span>${bitVal}</span>`;
+        el.className = bitVal
+          ? 'w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-sky-400 bg-sky-500 text-slate-950 hover:scale-105 transition flex items-center justify-center shadow-md shadow-sky-500/30'
+          : 'w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-slate-600 bg-slate-900 text-slate-300 hover:scale-105 transition flex items-center justify-center';
+      };
+
+      styleBitBtn(btnX, x);
+      styleBitBtn(btnY, y);
+      if (isFA) {
+        btnZ.classList.remove('hidden');
+        styleBitBtn(btnZ, z);
+      } else {
+        btnZ.classList.add('hidden');
+      }
+
+      const sum = isFA ? (x ^ y ^ z) : (x ^ y);
+      const cout = isFA ? ((x & y) | (y & z) | (x & z)) : (x & y);
+      const totalNumeric = isFA ? (x + y + z) : (x + y);
+
+      document.getElementById('comp-in-desc').textContent = isFA ? '3 dots consumed in Col k' : '2 dots consumed in Col k';
+      document.getElementById('comp-badge-title').textContent = isFA ? 'Full Adder (3:2)' : 'Half Adder (2:2)';
+      document.getElementById('comp-eq-sum').textContent = isFA ? `Sum = ${x} ⊕ ${y} ⊕ ${z} = ${sum}` : `Sum = ${x} ⊕ ${y} = ${sum}`;
+      document.getElementById('comp-eq-cout').textContent = isFA ? `Carry = Maj(${x},${y},${z}) = ${cout}` : `Carry = ${x} · ${y} = ${cout}`;
+      document.getElementById('comp-math-check').textContent = isFA
+        ? `${x} + ${y} + ${z} = ${totalNumeric} (${cout}${sum}₂)`
+        : `${x} + ${y} = ${totalNumeric} (${cout}${sum}₂)`;
+
+      const outSum = document.getElementById('comp-out-sum');
+      const outCout = document.getElementById('comp-out-cout');
+      outSum.textContent = sum;
+      outCout.textContent = cout;
+
+      outSum.className = sum
+        ? 'w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-emerald-300 bg-emerald-500 text-slate-950 flex items-center justify-center shadow-md shadow-emerald-500/30'
+        : 'w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-emerald-500/50 bg-slate-900 text-emerald-300 flex items-center justify-center';
+
+      outCout.className = cout
+        ? 'w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-rose-300 bg-rose-500 text-slate-950 flex items-center justify-center shadow-md shadow-rose-500/30'
+        : 'w-10 h-10 rounded-full font-mono font-bold text-sm border-2 border-rose-500/50 bg-slate-900 text-rose-300 flex items-center justify-center';
+
+      const takeaway = document.getElementById('comp-takeaway');
+      if (isFA) {
+        takeaway.innerHTML = '<strong>Key Accounting Rule (FA):</strong> A <strong>Full Adder</strong> takes <strong>3 dots</strong> from Column <span class="math-pill">k</span> and leaves <strong>1 Sum dot</strong> in Column <span class="math-pill">k</span> (so Column <span class="math-pill">k</span> loses <strong>2 dots</strong>!), while sending <strong>1 Carry dot</strong> to Column <span class="math-pill">k+1</span>.';
+      } else {
+        takeaway.innerHTML = '<strong>Key Accounting Rule (HA):</strong> A <strong>Half Adder</strong> takes <strong>2 dots</strong> from Column <span class="math-pill">k</span> and leaves <strong>1 Sum dot</strong> in Column <span class="math-pill">k</span> (so Column <span class="math-pill">k</span> loses <strong>1 dot</strong>!), while sending <strong>1 Carry dot</strong> to Column <span class="math-pill">k+1</span>.';
+      }
+    }
+
+    // =========================================================================
+    // 4. MODULE 2: INTERACTIVE QUIZ LOGIC
+    // =========================================================================
+    const quizScenarios = [
+      { d: 3, existing: 4, carries: 0 },
+      { d: 3, existing: 5, carries: 1 },
+      { d: 2, existing: 3, carries: 1 },
+      { d: 2, existing: 3, carries: 0 },
+      { d: 4, existing: 6, carries: 1 },
+      { d: 4, existing: 4, carries: 0 },
+      { d: 6, existing: 8, carries: 1 },
+      { d: 2, existing: 2, carries: 1 }
+    ];
+    let currentQuizIdx = 1;
+
+    function loadQuizScenario(idx) {
+      const sc = quizScenarios[idx % quizScenarios.length];
+      state.quiz.d = sc.d;
+      state.quiz.existing = sc.existing;
+      state.quiz.carries = sc.carries;
+      state.quiz.userFA = 0;
+      state.quiz.userHA = 0;
+      updateQuizUI();
+      document.getElementById('quiz-feedback').className = 'p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed';
+      document.getElementById('quiz-feedback').innerHTML = `Calculate total height <code class="mono text-amber-300">H = ${sc.existing} + ${sc.carries} = ${sc.existing + sc.carries}</code>. How many FAs (−2 each) and HAs (−1 each) are needed to reach <code class="mono text-sky-300">d = ${sc.d}</code>?`;
+    }
+
+    function updateQuizUI() {
+      const { d, existing, carries, userFA, userHA, score, attempts } = state.quiz;
+      const totalH = existing + carries;
+      const resultingH = totalH - 2 * userFA - userHA;
+      const dotsNeeded = 3 * userFA + 2 * userHA;
+
+      document.getElementById('quiz-target-d').textContent = `d = ${d}`;
+      document.getElementById('quiz-total-h').textContent = `H = ${totalH}`;
+      document.getElementById('quiz-existing-dots').textContent = existing;
+      document.getElementById('quiz-incoming-carries').textContent = `+${carries}`;
+      document.getElementById('quiz-fa-val').textContent = userFA;
+      document.getElementById('quiz-ha-val').textContent = userHA;
+      document.getElementById('quiz-score-badge').textContent = `Score: ${score} / ${attempts}`;
+
+      const resEl = document.getElementById('quiz-resulting-h');
+      resEl.textContent = `${resultingH} (Target: ≤ ${d})`;
+      if (dotsNeeded > existing) {
+        resEl.className = 'font-bold text-rose-400';
+        resEl.textContent = `Invalid! Need ${dotsNeeded} existing dots (only have ${existing})`;
+      } else if (resultingH <= d) {
+        resEl.className = 'font-bold text-emerald-400';
+      } else {
+        resEl.className = 'font-bold text-amber-400';
+      }
+
+      // Render dot preview pills
+      const preview = document.getElementById('quiz-dot-preview');
+      let html = '';
+      for (let i = 0; i < existing; i++) {
+        html += `<span class="w-5 h-5 rounded-full bg-sky-400 border border-sky-200 inline-flex items-center justify-center text-[10px] font-mono font-bold text-slate-950" title="Existing Dot">•</span>`;
+      }
+      for (let i = 0; i < carries; i++) {
+        html += `<span class="w-5 h-5 rounded-full bg-rose-500/30 border-2 border-rose-400 inline-flex items-center justify-center text-[10px] font-mono font-bold text-rose-200" title="Incoming Carry from Col k-1">C</span>`;
+      }
+      preview.innerHTML = html;
+    }
+
+    function checkQuizAnswer() {
+      const { d, existing, carries, userFA, userHA } = state.quiz;
+      let H = existing + carries;
+      let expectedFA = 0;
+      let expectedHA = 0;
+      while (H > d) {
+        if (H - d >= 2) {
+          expectedFA++;
+          H -= 2;
+        } else {
+          expectedHA++;
+          H -= 1;
+        }
+      }
+
+      state.quiz.attempts++;
+      const fb = document.getElementById('quiz-feedback');
+      if (userFA === expectedFA && userHA === expectedHA) {
+        state.quiz.score++;
+        fb.className = 'p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-xs text-emerald-200 leading-relaxed';
+        fb.innerHTML = `<strong>Spot on!</strong> Starting with <span class="math-pill">H = ${existing + carries}</span> and target <span class="math-pill">d = ${d}</span>, Dadda uses <strong>${expectedFA} Full Adder(s)</strong> and <strong>${expectedHA} Half Adder(s)</strong>, reducing the column height to ${existing + carries - 2 * expectedFA - expectedHA} and sending ${expectedFA + expectedHA} carry dot(s) to column <span class="math-pill">k+1</span>.`;
+      } else {
+        fb.className = 'p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-xs text-rose-200 leading-relaxed';
+        fb.innerHTML = `<strong>Not quite!</strong> For <span class="math-pill">H = ${existing + carries}</span> and target <span class="math-pill">d = ${d}</span>, we need to remove ${Math.max(0, existing + carries - d)} dot(s). The optimal Dadda allocation is <strong>${expectedFA} FA(s)</strong> and <strong>${expectedHA} HA(s)</strong>.`;
+      }
+      updateQuizUI();
+    }
+
+    // =========================================================================
+    // 5. MODULE 3: MAIN INTERACTIVE DADDA SIMULATOR RENDERER
+    // =========================================================================
+    let currentSimData = null;
+
+    function clampOperands() {
+      const maxVal = (1 << state.sim.N) - 1;
+      state.sim.opA = Math.max(0, Math.min(maxVal, Math.floor(state.sim.opA || 0)));
+      state.sim.opB = Math.max(0, Math.min(maxVal, Math.floor(state.sim.opB || 0)));
+
+      const inA = document.getElementById('input-op-a');
+      const inB = document.getElementById('input-op-b');
+      if (inA && inB) {
+        inA.max = maxVal;
+        inB.max = maxVal;
+        inA.value = state.sim.opA;
+        inB.value = state.sim.opB;
+      }
+    }
+
+    function rebuildSimulation() {
+      clampOperands();
+      currentSimData = simulateDadda(state.sim.N, state.sim.opA, state.sim.opB);
+      const maxStageIdx = currentSimData.reductionStages.length + 2; // 0=PP, 1=Compact, 2..S+1=Stages, S+2=CPA
+      if (state.sim.stageIdx > maxStageIdx) {
+        state.sim.stageIdx = maxStageIdx;
+      }
+      if (state.sim.focusedCol !== null && state.sim.focusedCol >= currentSimData.numCols) {
+        state.sim.focusedCol = null;
+      }
+      renderSimControls();
+      renderStageStepper();
+      renderMainDiagram();
+      renderNarratorAndCPA();
+      renderColumnSummaryTable();
+    }
+
+    function renderSimControls() {
+      const { N, opA, opB, product, aBits, bBits } = currentSimData;
+
+      // Highlight active bit-width button
+      document.querySelectorAll('.bit-width-btn').forEach(btn => {
+        const b = parseInt(btn.getAttribute('data-bits'), 10);
+        btn.className = b === N
+          ? 'bit-width-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-sky-500 text-slate-950 transition'
+          : 'bit-width-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white transition';
+      });
+
+      const binA = opA.toString(2).padStart(N, '0');
+      const binB = opB.toString(2).padStart(N, '0');
+      const binP = product.toString(2).padStart(2 * N, '0');
+
+      document.getElementById('label-a-hex').textContent = `0x${opA.toString(16).toUpperCase()} • ${binA}₂`;
+      document.getElementById('label-b-hex').textContent = `0x${opB.toString(16).toUpperCase()} • ${binB}₂`;
+      document.getElementById('label-p-hex').textContent = `0x${product.toString(16).toUpperCase()}`;
+      document.getElementById('label-p-dec').textContent = `${opA} × ${opB} = ${product}`;
+      document.getElementById('label-p-bin').textContent = `${binP}₂ (${2 * N}-bit output)`;
+
+      // Render clickable bit buttons for A (MSB on left, LSB on right)
+      const wrapA = document.getElementById('bits-op-a');
+      const wrapB = document.getElementById('bits-op-b');
+      wrapA.innerHTML = '';
+      wrapB.innerHTML = '';
+
+      for (let i = N - 1; i >= 0; i--) {
+        const bitA = aBits[i];
+        const btnA = document.createElement('button');
+        btnA.className = bitA
+          ? 'w-6 h-7 rounded font-mono text-xs font-bold bg-sky-500 text-slate-950 border border-sky-300 transition'
+          : 'w-6 h-7 rounded font-mono text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-500 transition';
+        btnA.textContent = bitA;
+        btnA.title = `Toggle a[${i}] (weight 2^${i})`;
+        btnA.addEventListener('click', () => {
+          state.sim.opA ^= (1 << i);
+          rebuildSimulation();
+        });
+        wrapA.appendChild(btnA);
+
+        const bitB = bBits[i];
+        const btnB = document.createElement('button');
+        btnB.className = bitB
+          ? 'w-6 h-7 rounded font-mono text-xs font-bold bg-emerald-500 text-slate-950 border border-emerald-300 transition'
+          : 'w-6 h-7 rounded font-mono text-xs font-bold bg-slate-900 text-slate-400 border border-slate-700 hover:border-slate-500 transition';
+        btnB.textContent = bitB;
+        btnB.title = `Toggle b[${i}] (weight 2^${i})`;
+        btnB.addEventListener('click', () => {
+          state.sim.opB ^= (1 << i);
+          rebuildSimulation();
+        });
+        wrapB.appendChild(btnB);
+      }
+    }
+
+    function getStageList() {
+      const stages = [
+        { idx: 0, short: '0. Partial Products', title: 'Step 0: Generate N² Partial Products (AND Gates)' },
+        { idx: 1, short: '1. Column Pack', title: 'Step 1: Gravity-Pack Dots into Power-of-2 Columns' }
+      ];
+      currentSimData.reductionStages.forEach((st, i) => {
+        stages.push({
+          idx: i + 2,
+          short: `Stage ${st.stageNum} (d=${st.targetD})`,
+          title: `Dadda Stage ${st.stageNum}: Reduce Max Height to d = ${st.targetD}`
+        });
+      });
+      stages.push({
+        idx: currentSimData.reductionStages.length + 2,
+        short: 'Final CPA (d=2→1)',
+        title: 'Final Step: 2-Row Carry-Propagate Adder (CPA)'
+      });
+      return stages;
+    }
+
+    function renderStageStepper() {
+      const bar = document.getElementById('stage-stepper-bar');
+      const stages = getStageList();
+      bar.innerHTML = '';
+
+      stages.forEach(st => {
+        const active = state.sim.stageIdx === st.idx;
+        const btn = document.createElement('button');
+        btn.className = active
+          ? 'px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-sky-500 text-slate-950 shadow-md shadow-sky-500/20 transition'
+          : 'px-3 py-1.5 rounded-xl text-xs font-mono font-medium bg-slate-950 text-slate-300 hover:text-white border border-slate-800 transition';
+        btn.textContent = st.short;
+        btn.addEventListener('click', () => {
+          state.sim.stageIdx = st.idx;
+          state.sim.focusedCol = null;
+          rebuildSimulation();
+        });
+        bar.appendChild(btn);
+      });
+
+      // Micro-step column bar visibility (only on reduction stages)
+      const isReductionStage = state.sim.stageIdx >= 2 && state.sim.stageIdx < currentSimData.reductionStages.length + 2;
+      const microBar = document.getElementById('micro-step-bar');
+      if (isReductionStage) {
+        microBar.classList.remove('hidden');
+        const k = state.sim.focusedCol;
+        const label = document.getElementById('micro-step-label');
+        const btnAll = document.getElementById('btn-col-all');
+        if (k === null) {
+          label.textContent = `Viewing Full Stage (All Columns k = 0 .. ${currentSimData.numCols - 1})`;
+          btnAll.className = 'px-2.5 py-1 rounded bg-sky-500 text-slate-950 font-semibold text-xs font-mono';
+        } else {
+          label.textContent = `Scanning Column k = ${k} (Weight 2^${k} = ${1 << k})`;
+          btnAll.className = 'px-2.5 py-1 rounded bg-slate-800 text-slate-300 text-xs font-mono border border-slate-700';
+        }
+      } else {
+        microBar.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 6. MAIN SVG DOT-DIAGRAM & COMPRESSOR RENDERER
+    // =========================================================================
+    function renderMainDiagram() {
+      const svg = document.getElementById('svg-dadda-main');
+      const { N, numCols, shiftedRows, initialCols, reductionStages, finalCols, productBits, totalFA, totalHA, cpaWidth } = currentSimData;
+      const stages = getStageList();
+      const activeStageMeta = stages[state.sim.stageIdx] || stages[0];
+
+      document.getElementById('sim-canvas-title').textContent = activeStageMeta.title;
+      document.getElementById('sim-total-hw-summary').textContent =
+        `Total Tree: ${totalFA} Full Adders + ${totalHA} Half Adders + ${cpaWidth}-bit CPA`;
+
+      // Dynamic coordinate spacing for 4x4, 6x6, 8x8
+      const colSpacing = N === 4 ? 86 : (N === 6 ? 58 : 46);
+      const dotRadius = N === 4 ? 12 : (N === 6 ? 9.5 : 7.8);
+      const rowSpacing = N === 4 ? 32 : (N === 6 ? 25 : 21);
+      const leftPad = 56;
+      const rightPad = 56;
+      const width = Math.max(720, leftPad + rightPad + (numCols - 1) * colSpacing);
+      // Column k=0 on the right, k=numCols-1 on the left
+      const colX = k => width - rightPad - k * colSpacing;
+
+      let svgHeight = 460;
+      if (N === 8) svgHeight = 520;
+      svg.setAttribute('viewBox', `0 0 ${width} ${svgHeight}`);
+
+      let html = '';
+
+      // Defs for arrowheads
+      html += `
+        <defs>
+          <marker id="arrow-sum" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399" />
+          </marker>
+          <marker id="arrow-carry" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#fb7185" />
+          </marker>
+        </defs>
+      `;
+
+      // Draw Column Guide Lines & Column Header Badges
+      for (let k = 0; k < numCols; k++) {
+        const x = colX(k);
+        const isFocused = state.sim.focusedCol === k;
+        const dimmed = state.sim.focusedCol !== null && state.sim.focusedCol !== k && state.sim.focusedCol !== k - 1;
+        const colStroke = isFocused ? '#f59e0b' : '#1e293b';
+        const headerFill = isFocused ? '#451a03' : '#0f172a';
+        const headerStroke = isFocused ? '#f59e0b' : '#334155';
+
+        html += `
+          <g opacity="${dimmed ? '0.32' : '1'}">
+            <line x1="${x}" y1="42" x2="${x}" y2="${svgHeight - 28}" stroke="${colStroke}" stroke-dasharray="${isFocused ? 'none' : '3,3'}" stroke-width="${isFocused ? '2' : '1'}" />
+            <rect x="${x - 20}" y="8" width="40" height="24" rx="6" fill="${headerFill}" stroke="${headerStroke}" class="cursor-pointer col-header-box" data-col="${k}" />
+            <text x="${x}" y="24" text-anchor="middle" fill="${isFocused ? '#fde68a' : '#94a3b8'}" font-size="10" font-weight="600" font-family="JetBrains Mono" class="pointer-events-none">k=${k}</text>
+          </g>
+        `;
+      }
+
+      // Helper to draw a dot
+      const drawDot = (dot, x, y, extraClass = '') => {
+        const isOne = dot.val === 1;
+        let fill = isOne ? '#38bdf8' : '#0f172a';
+        let stroke = isOne ? '#e0f2fe' : '#64748b';
+        let textFill = isOne ? '#020617' : '#94a3b8';
+
+        if (dot.kind === 'sum') {
+          stroke = '#34d399';
+          if (isOne) fill = '#10b981';
+        } else if (dot.kind === 'carry') {
+          stroke = '#fb7185';
+          if (isOne) fill = '#f43f5e';
+        }
+
+        const shortText = N === 4 && dot.kind === 'pp' ? `a${dot.i}b${dot.j}` : String(dot.val);
+        const fontSize = N === 4 && dot.kind === 'pp' ? 8.5 : (N === 8 ? 8.5 : 9.5);
+        const payload = encodeURIComponent(JSON.stringify({
+          type: 'dot',
+          id: dot.id,
+          col: dot.col,
+          val: dot.val,
+          kind: dot.kind,
+          label: dot.label,
+          formula: dot.formula
+        }));
+
+        return `
+          <g class="dot-node ${extraClass}" data-inspect="${payload}">
+            <circle cx="${x}" cy="${y}" r="${dotRadius}" fill="${fill}" stroke="${stroke}" stroke-width="2" />
+            <text x="${x}" y="${y + 3.2}" text-anchor="middle" fill="${textFill}" font-size="${fontSize}" font-weight="700" font-family="JetBrains Mono" class="pointer-events-none">${shortText}</text>
+          </g>
+        `;
+      };
+
+      // =======================================================================
+      // CASE A: STAGE 0 (Shifted Partial Products) or STAGE 1 (Compacted Columns)
+      // =======================================================================
+      if (state.sim.stageIdx === 0 || state.sim.stageIdx === 1) {
+        const isCompacted = state.sim.stageIdx === 1;
+        const firstTarget = reductionStages.length > 0 ? reductionStages[0].targetD : 2;
+
+        // Draw target d line in Stage 1
+        if (isCompacted) {
+          const limitY = 64 + (firstTarget - 0.5) * rowSpacing;
+          html += `
+            <line x1="20" y1="${limitY}" x2="${width - 20}" y2="${limitY}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="6,4" />
+            <rect x="24" y="${limitY - 18}" width="185" height="18" rx="4" fill="#451a03" stroke="#f59e0b" />
+            <text x="32" y="${limitY - 6}" fill="#fde68a" font-size="10" font-family="JetBrains Mono">Stage 1 Target Ceiling: d = ${firstTarget}</text>
+          `;
+        }
+
+        const colCounters = Array(numCols).fill(0);
+        for (let j = 0; j < N; j++) {
+          for (let i = 0; i < N; i++) {
+            const dot = shiftedRows[j][i];
+            const k = dot.col;
+            const x = colX(k);
+            const rIdx = isCompacted ? colCounters[k] : j;
+            colCounters[k]++;
+            const y = 64 + rIdx * rowSpacing;
+            html += drawDot(dot, x, y);
+          }
+        }
+
+        // Draw column heights at bottom
+        for (let k = 0; k < numCols; k++) {
+          const x = colX(k);
+          const h = initialCols[k].length;
+          const over = h > firstTarget;
+          html += `
+            <text x="${x}" y="${svgHeight - 10}" text-anchor="middle" fill="${over ? '#f59e0b' : '#38bdf8'}" font-size="10.5" font-weight="700" font-family="JetBrains Mono">h=${h}</text>
+          `;
+        }
+      }
+
+      // =======================================================================
+      // CASE B: REDUCTION STAGE (Top band = Input dots + FA/HA boxes, Bottom band = Output dots)
+      // =======================================================================
+      else if (state.sim.stageIdx >= 2 && state.sim.stageIdx < reductionStages.length + 2) {
+        const rStage = reductionStages[state.sim.stageIdx - 2];
+        const { inputCols, outputCols, colDetails, targetD, stageNum } = rStage;
+
+        const topBandY = 78;
+        const maxInH = Math.max(...inputCols.map(c => c.length));
+        const maxOutH = Math.max(...outputCols.map(c => c.length));
+        const channelTopY = topBandY + (maxInH - 1) * rowSpacing + dotRadius + 10;
+        const bottomBandY = channelTopY + 72;
+        svgHeight = Math.max(460, bottomBandY + maxOutH * rowSpacing + 30);
+        svg.setAttribute('viewBox', `0 0 ${width} ${svgHeight}`);
+
+        // Band Labels placed in dedicated horizontal strips above dots so they never overlap dots
+        html += `
+          <rect x="14" y="38" width="210" height="20" rx="5" fill="#0f172a" stroke="#334155" />
+          <text x="24" y="52" fill="#94a3b8" font-size="10" font-weight="700" font-family="JetBrains Mono">BEFORE STAGE ${stageNum} (Inputs)</text>
+
+          <line x1="14" y1="${bottomBandY - 40}" x2="${width - 14}" y2="${bottomBandY - 40}" stroke="#1e293b" stroke-width="1.5" />
+          <rect x="14" y="${bottomBandY - 34}" width="255" height="20" rx="5" fill="#064e3b" stroke="#10b981" />
+          <text x="24" y="${bottomBandY - 20}" fill="#a7f3d0" font-size="10" font-weight="700" font-family="JetBrains Mono">AFTER STAGE ${stageNum} (Max Height ≤ d=${targetD})</text>
+        `;
+
+        // Record coordinates of output dots so we can draw Sum & Carry wires from compressors
+        const outputCoords = {};
+        for (let k = 0; k < numCols; k++) {
+          const x = colX(k);
+          outputCols[k].forEach((dot, rIdx) => {
+            const y = bottomBandY + rIdx * rowSpacing;
+            outputCoords[dot.id] = { x, y };
+          });
+        }
+
+        // Draw Compressor Capsules & Wires First (behind dots)
+        for (let k = 0; k < numCols; k++) {
+          const dimmed = state.sim.focusedCol !== null && state.sim.focusedCol !== k;
+          const x = colX(k);
+          const detail = colDetails[k];
+          let usedIdx = 0;
+          const colLastDotBottomY = topBandY + Math.max(0, inputCols[k].length - 1) * rowSpacing + dotRadius + 6;
+
+          detail.compressors.forEach((comp, cIdx) => {
+            const count = comp.type === 'FA' ? 3 : 2;
+            const yStart = topBandY + usedIdx * rowSpacing - dotRadius - 4;
+            const boxHeight = (count - 1) * rowSpacing + 2 * dotRadius + 8;
+            usedIdx += count;
+
+            const isFA = comp.type === 'FA';
+            const boxFill = isFA ? 'rgba(245, 158, 11, 0.16)' : 'rgba(56, 189, 248, 0.16)';
+            const boxStroke = isFA ? '#f59e0b' : '#38bdf8';
+
+            const sumPos = outputCoords[comp.sumDot.id];
+            const carryPos = outputCoords[comp.carryDot.id];
+            const wireOriginY = Math.max(yStart + boxHeight, colLastDotBottomY);
+
+            const compPayload = encodeURIComponent(JSON.stringify({
+              type: 'comp',
+              id: comp.id,
+              compType: comp.type,
+              stage: stageNum,
+              col: k,
+              inputs: comp.inputs.map(d => ({ label: d.label, val: d.val })),
+              sumVal: comp.sumDot.val,
+              carryVal: comp.carryDot.val
+            }));
+
+            html += `<g opacity="${dimmed ? '0.2' : '1'}">`;
+
+            // Side bus line from capsule to bottom of input column if unconsumed dots sit below capsule
+            if (wireOriginY > yStart + boxHeight + 2) {
+              const sideX = x + dotRadius + 5;
+              html += `<path d="M ${sideX} ${yStart + boxHeight - 6} L ${sideX} ${wireOriginY} L ${x} ${wireOriginY}" fill="none" stroke="${boxStroke}" stroke-width="1.3" stroke-dasharray="2,2" />`;
+            }
+
+            // Wire to Sum (straight down in column k across the open channel)
+            if (sumPos) {
+              const xOff = cIdx * 4;
+              html += `<path d="M ${x + xOff} ${wireOriginY} L ${sumPos.x + xOff} ${sumPos.y - dotRadius - 3}" fill="none" stroke="#34d399" stroke-width="1.7" stroke-dasharray="4,2" marker-end="url(#arrow-sum)" class="wire-path" />`;
+            }
+
+            // Wire to Carry (diagonally left to column k+1 across the open channel)
+            if (carryPos) {
+              html += `<path d="M ${x - 4} ${wireOriginY} C ${x - colSpacing * 0.4} ${(wireOriginY + carryPos.y) / 2}, ${carryPos.x + colSpacing * 0.25} ${(wireOriginY + carryPos.y) / 2}, ${carryPos.x + dotRadius * 0.65} ${carryPos.y - dotRadius - 3}" fill="none" stroke="#fb7185" stroke-width="1.8" marker-end="url(#arrow-carry)" class="wire-path" />`;
+            }
+
+            // Compressor Capsule Box with neat corner badge
+            html += `
+              <rect x="${x - dotRadius - 5}" y="${yStart}" width="${2 * dotRadius + 10}" height="${boxHeight}" rx="8" fill="${boxFill}" stroke="${boxStroke}" stroke-width="2" class="comp-box" data-inspect="${compPayload}" />
+              <rect x="${x + dotRadius - 3}" y="${yStart + 2}" width="18" height="12" rx="3" fill="#090d16" stroke="${boxStroke}" stroke-width="1" class="pointer-events-none" />
+              <text x="${x + dotRadius + 6}" y="${yStart + 10.5}" text-anchor="middle" fill="${boxStroke}" font-size="7.5" font-weight="700" font-family="JetBrains Mono" class="pointer-events-none">${comp.type}</text>
+            `;
+            html += `</g>`;
+          });
+        }
+
+        // Draw Top Band (Input Dots)
+        for (let k = 0; k < numCols; k++) {
+          const dimmed = state.sim.focusedCol !== null && state.sim.focusedCol !== k;
+          const x = colX(k);
+          html += `<g opacity="${dimmed ? '0.25' : '1'}">`;
+          inputCols[k].forEach((dot, rIdx) => {
+            const y = topBandY + rIdx * rowSpacing;
+            html += drawDot(dot, x, y);
+          });
+          html += `</g>`;
+        }
+
+        // Draw Bottom Band (Output Dots)
+        for (let k = 0; k < numCols; k++) {
+          const dimmed = state.sim.focusedCol !== null && state.sim.focusedCol !== k && state.sim.focusedCol !== k - 1;
+          const x = colX(k);
+          html += `<g opacity="${dimmed ? '0.25' : '1'}">`;
+          outputCols[k].forEach((dot, rIdx) => {
+            const y = bottomBandY + rIdx * rowSpacing;
+            html += drawDot(dot, x, y);
+          });
+          const outH = outputCols[k].length;
+          html += `
+            <text x="${x}" y="${svgHeight - 10}" text-anchor="middle" fill="#34d399" font-size="10" font-weight="700" font-family="JetBrains Mono">h=${outH}≤${targetD}</text>
+          `;
+          html += `</g>`;
+        }
+      }
+
+      // =======================================================================
+      // CASE C: FINAL STAGE (2-Row Carry-Propagate Adder & Final Product Bits)
+      // =======================================================================
+      else {
+        const topY = 75;
+        html += `
+          <rect x="14" y="42" width="295" height="20" rx="4" fill="#0f172a" stroke="#38bdf8" />
+          <text x="22" y="56" fill="#bae6fd" font-size="10.5" font-weight="600" font-family="JetBrains Mono">FINAL 2-ROW MATRIX (Height ≤ d₁ = 2)</text>
+        `;
+
+        for (let k = 0; k < numCols; k++) {
+          const x = colX(k);
+          finalCols[k].forEach((dot, rIdx) => {
+            const y = topY + rIdx * (rowSpacing + 6);
+            html += drawDot(dot, x, y);
+          });
+        }
+
+        // Draw the CPA Adder Bar
+        const cpaY = 175;
+        const leftMostX = colX(numCols - 1) - 24;
+        const rightMostX = colX(1) + 24;
+        html += `
+          <rect x="${leftMostX}" y="${cpaY}" width="${rightMostX - leftMostX}" height="44" rx="10" fill="#1e1b4b" stroke="#818cf8" stroke-width="2" />
+          <text x="${(leftMostX + rightMostX) / 2}" y="${cpaY + 26}" text-anchor="middle" fill="#e0e7ff" font-size="12" font-weight="700" font-family="JetBrains Mono">
+            ${cpaWidth}-Bit Fast Carry-Propagate Adder (Columns k = 1 .. ${numCols - 1})
+          </text>
+          <text x="${colX(0)}" y="${cpaY + 26}" text-anchor="middle" fill="#34d399" font-size="10" font-weight="700" font-family="JetBrains Mono">Direct Wire</text>
+        `;
+
+        // Draw Final Product Bits P[0 .. 2N-1]
+        const prodY = 275;
+        for (let k = 0; k <= numCols; k++) {
+          const x = k < numCols ? colX(k) : colX(numCols - 1) - colSpacing * 0.85;
+          if (x < 18) continue;
+          const pBit = productBits[k] ?? 0;
+          const fill = pBit ? '#10b981' : '#0f172a';
+          const stroke = pBit ? '#a7f3d0' : '#475569';
+          const textFill = pBit ? '#020617' : '#cbd5e1';
+
+          html += `
+            <g>
+              <line x1="${x}" y1="${cpaY + 44}" x2="${x}" y2="${prodY - 18}" stroke="#34d399" stroke-width="1.5" />
+              <rect x="${x - 15}" y="${prodY - 15}" width="30" height="30" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2" />
+              <text x="${x}" y="${prodY + 4}" text-anchor="middle" fill="${textFill}" font-size="12" font-weight="700" font-family="JetBrains Mono">${pBit}</text>
+              <text x="${x}" y="${prodY + 30}" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="JetBrains Mono">P[${k}]</text>
+            </g>
+          `;
+        }
+      }
+
+      svg.innerHTML = html;
+
+      // Bind click/hover listeners on dots and compressor boxes
+      svg.querySelectorAll('[data-inspect]').forEach(el => {
+        const handleSelect = () => {
+          try {
+            const data = JSON.parse(decodeURIComponent(el.getAttribute('data-inspect')));
+            renderInspector(data);
+          } catch (err) {}
+        };
+        el.addEventListener('mouseenter', handleSelect);
+        el.addEventListener('click', handleSelect);
+      });
+
+      // Bind column header clicks
+      svg.querySelectorAll('.col-header-box').forEach(el => {
+        el.addEventListener('click', () => {
+          const col = parseInt(el.getAttribute('data-col'), 10);
+          state.sim.focusedCol = state.sim.focusedCol === col ? null : col;
+          rebuildSimulation();
+        });
+      });
+    }
+
+    function renderInspector(data) {
+      const box = document.getElementById('inspector-content');
+      if (!data) return;
+
+      if (data.type === 'dot') {
+        const badgeColor = data.kind === 'pp' ? 'text-sky-300 bg-sky-500/15 border-sky-500/30'
+          : (data.kind === 'sum' ? 'text-emerald-300 bg-emerald-500/15 border-emerald-500/30' : 'text-rose-300 bg-rose-500/15 border-rose-500/30');
+        const kindLabel = data.kind === 'pp' ? 'Partial Product Bit' : (data.kind === 'sum' ? 'Adder Sum Output' : 'Adder Carry Output');
+
+        box.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded border text-[11px] font-mono font-bold ${badgeColor}">${kindLabel}</span>
+            <span class="font-mono text-xs text-slate-400">Col k=${data.col} (2^${data.col} = ${1 << data.col})</span>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <span class="text-sm font-bold text-white font-mono">${data.label}</span>
+            <span class="px-2.5 py-0.5 rounded-full font-mono text-xs font-bold ${data.val ? 'bg-sky-500 text-slate-950' : 'bg-slate-800 text-slate-300'}">Bit Value = ${data.val}</span>
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 font-mono text-[11px] text-slate-300">
+            ${data.formula}
+          </div>
+        `;
+      } else if (data.type === 'comp') {
+        const isFA = data.compType === 'FA';
+        const inputsHtml = data.inputs.map(inp => `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">${inp.label}=${inp.val}</span>`).join(' ');
+        box.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded border text-[11px] font-mono font-bold ${isFA ? 'text-amber-300 bg-amber-500/15 border-amber-500/30' : 'text-sky-300 bg-sky-500/15 border-sky-500/30'}">
+              ${isFA ? 'Full Adder (3:2 Compressor)' : 'Half Adder (2:2 Compressor)'}
+            </span>
+            <span class="font-mono text-xs text-slate-400">Stage ${data.stage} • Col k=${data.col}</span>
+          </div>
+          <div class="space-y-1">
+            <div class="text-[11px] text-slate-400">Inputs Consumed in Col k=${data.col}:</div>
+            <div class="flex flex-wrap gap-1 font-mono text-[11px]">${inputsHtml}</div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1 font-mono text-xs">
+            <div class="p-2 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
+              Sum (Col ${data.col}): <strong>${data.sumVal}</strong>
+            </div>
+            <div class="p-2 rounded bg-rose-500/10 border border-rose-500/30 text-rose-300">
+              Carry (Col ${data.col + 1}): <strong>${data.carryVal}</strong>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function renderNarratorAndCPA() {
+      const { N, numCols, reductionStages, finalTwoRows, productBits, cpaCarries } = currentSimData;
+      const pill = document.getElementById('narrator-stage-pill');
+      const heading = document.getElementById('narrator-heading');
+      const body = document.getElementById('narrator-body');
+
+      if (state.sim.stageIdx === 0) {
+        pill.textContent = `${N * N} AND Gates`;
+        heading.textContent = 'Step 0: Partial Product Generation';
+        body.innerHTML = `
+          <p>Every bit <code class="mono text-sky-300">a[i]</code> is ANDed with every bit <code class="mono text-emerald-300">b[j]</code> in parallel using <strong>${N * N} two-input AND gates</strong>.</p>
+          <p>Because <code class="mono">2ⁱ × 2ʲ = 2ⁱ⁺ʲ</code>, each partial product dot <code class="mono text-amber-300">aᵢ·bⱼ</code> belongs in column <code class="mono">k = i + j</code>.</p>
+          <p class="text-sky-300">Click <strong>"Next Stage ▶"</strong> to pack all dots to the top of their columns!</p>
+        `;
+      } else if (state.sim.stageIdx === 1) {
+        const firstD = reductionStages[0]?.targetD ?? 2;
+        pill.textContent = `Max Height = ${N}`;
+        heading.textContent = 'Step 1: Column Height Profile';
+        body.innerHTML = `
+          <p>Pushing all dots straight up reveals an inverted triangle with maximum height <strong>N = ${N}</strong> in column <span class="math-pill">k = ${N - 1}</span>.</p>
+          <p>Dadda's target sequence for N = ${N} is: <code class="mono text-amber-300">${currentSimData.targets.map(d => 'd=' + d).join(' → ')}</code>.</p>
+          <p>Notice the dashed amber line at <code class="mono text-amber-300">d = ${firstD}</code>: in Stage 1, we only touch columns that rise above this line!</p>
+        `;
+      } else if (state.sim.stageIdx >= 2 && state.sim.stageIdx < reductionStages.length + 2) {
+        const rStage = reductionStages[state.sim.stageIdx - 2];
+        pill.textContent = `Target d = ${rStage.targetD}`;
+
+        if (state.sim.focusedCol !== null) {
+          const cd = rStage.colDetails[state.sim.focusedCol];
+          heading.textContent = `Stage ${rStage.stageNum}, Column k = ${cd.col} Breakdown`;
+          body.innerHTML = `
+            <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 font-mono space-y-1">
+              <div>• Existing dots in Col ${cd.col}: <strong>${cd.existingCount}</strong></div>
+              <div>• Incoming carries from Col ${cd.col - 1}: <strong class="text-rose-300">+${cd.incomingCarryCount}</strong></div>
+              <div>• Total Height before reduction: <strong class="text-amber-300">H = ${cd.totalBefore}</strong></div>
+              <div>• Stage Target Ceiling: <strong class="text-sky-300">d = ${cd.targetD}</strong></div>
+            </div>
+            <p>${
+              cd.totalBefore <= cd.targetD
+                ? `Since <span class="math-pill">H = ${cd.totalBefore} ≤ ${cd.targetD}</span>, Dadda places <strong>0 adders</strong> here!`
+                : `Since <span class="math-pill">H − d = ${cd.totalBefore} − ${cd.targetD} = ${cd.totalBefore - cd.targetD}</span>, Dadda places <strong>${cd.faCount} FA(s)</strong> and <strong>${cd.haCount} HA(s)</strong>, leaving <strong>${cd.finalCount} dots</strong> in Column ${cd.col} and sending <strong>+${cd.faCount + cd.haCount} carry dot(s)</strong> to Column ${cd.col + 1}.`
+            }</p>
+          `;
+        } else {
+          heading.textContent = `Stage ${rStage.stageNum}: Reduce to d = ${rStage.targetD} (${rStage.stageFA} FA, ${rStage.stageHA} HA)`;
+          const activeCols = rStage.colDetails.filter(c => c.faCount > 0 || c.haCount > 0);
+          let listHtml = activeCols.map(c =>
+            `<div class="p-2 rounded bg-slate-950 border border-slate-800/90 font-mono text-[11px]">
+              <strong class="text-sky-300">Col k=${c.col}:</strong> ${c.existingCount} dots + ${c.incomingCarryCount} carry = <strong>${c.totalBefore}</strong> → <span class="text-amber-300">${c.faCount} FA, ${c.haCount} HA</span> → ${c.finalCount} dots
+            </div>`
+          ).join('');
+          body.innerHTML = `
+            <p>Scanning right-to-left (<span class="math-pill">k = 0 … ${numCols - 1}</span>), only columns where <code class="mono">H &gt; ${rStage.targetD}</code> get compressors:</p>
+            <div class="space-y-1.5">${listHtml}</div>
+            <p class="text-slate-400 pt-1">Tip: Use <strong>"Scan Next Col k →"</strong> above the diagram to step through this stage one column at a time!</p>
+          `;
+        }
+      } else {
+        pill.textContent = 'Final CPA';
+        heading.textContent = 'Final Step: Carry-Propagate Addition';
+        body.innerHTML = `
+          <p>Every column now has at most <strong><span class="math-pill">d<sub>1</sub> = 2</span> dots</strong>! Column <span class="math-pill">k = 0</span> only has 1 dot (<code class="mono text-sky-300">a₀·b₀</code>), so it wires directly to output bit <code class="mono text-emerald-300">P[0]</code> with zero adder delay.</p>
+          <p>Columns <span class="math-pill">k = 1 … ${numCols - 1}</span> form two (2N−2)-bit numbers that are summed by a single fast Carry-Propagate Adder (CPA) to produce <code class="mono text-emerald-300">P[1..${2 * N - 1}]</code>.</p>
+        `;
+      }
+
+      // Render CPA Bit Alignment Box
+      const cpaBox = document.getElementById('cpa-bit-alignment');
+      let row0Str = '';
+      let row1Str = '';
+      let carryStr = '';
+      let prodStr = '';
+
+      for (let k = numCols; k >= 0; k--) {
+        if (k === numCols) {
+          row0Str += '  ';
+          row1Str += '+ ';
+          carryStr += `<span class="text-rose-400">${cpaCarries[k] ?? 0}</span> `;
+          prodStr += `<span class="text-emerald-400 font-bold">${productBits[k] ?? 0}</span> `;
+        } else {
+          const b0 = finalTwoRows[0][k] ? finalTwoRows[0][k].val : '·';
+          const b1 = finalTwoRows[1][k] ? finalTwoRows[1][k].val : '·';
+          row0Str += `${b0} `;
+          row1Str += `${b1} `;
+          carryStr += `<span class="text-rose-400">${cpaCarries[k] ?? 0}</span> `;
+          prodStr += `<span class="text-emerald-400 font-bold">${productBits[k] ?? 0}</span> `;
+        }
+      }
+
+      cpaBox.innerHTML = `
+        <div class="text-slate-400">Row 1: <span class="text-sky-300">${row0Str}</span></div>
+        <div class="text-slate-400">Row 2: <span class="text-sky-300">${row1Str}</span></div>
+        <div class="text-slate-400 border-b border-slate-800 pb-1">Carry: ${carryStr}</div>
+        <div class="text-white pt-0.5">Prod : ${prodStr}</div>
+      `;
+    }
+
+    function renderColumnSummaryTable() {
+      const wrap = document.getElementById('sim-column-table-wrap');
+      const { numCols, initialCols, reductionStages } = currentSimData;
+
+      let thCols = '';
+      for (let k = numCols - 1; k >= 0; k--) {
+        thCols += `<th class="px-2 py-1 text-center text-slate-400 font-mono">k=${k}</th>`;
+      }
+
+      let rowsHtml = `
+        <tr class="border-b border-slate-800/80">
+          <td class="px-2 py-1 font-mono text-slate-300">Initial Dots</td>
+          ${Array.from({ length: numCols }, (_, idx) => {
+            const k = numCols - 1 - idx;
+            return `<td class="px-2 py-1 text-center font-mono text-sky-300">${initialCols[k].length}</td>`;
+          }).join('')}
+        </tr>
+      `;
+
+      reductionStages.forEach(st => {
+        rowsHtml += `
+          <tr class="border-b border-slate-800/60">
+            <td class="px-2 py-1 font-mono text-amber-300">Stage ${st.stageNum} (d=${st.targetD})</td>
+            ${Array.from({ length: numCols }, (_, idx) => {
+              const k = numCols - 1 - idx;
+              const cd = st.colDetails[k];
+              const gates = [];
+              if (cd.faCount) gates.push(`${cd.faCount}F`);
+              if (cd.haCount) gates.push(`${cd.haCount}H`);
+              const gateStr = gates.length ? `<span class="text-[10px] text-amber-300">(${gates.join(',')})</span>` : '';
+              return `<td class="px-2 py-1 text-center font-mono text-emerald-300">${cd.finalCount} ${gateStr}</td>`;
+            }).join('')}
+          </tr>
+        `;
+      });
+
+      wrap.innerHTML = `
+        <table class="w-full text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-900/60">
+              <th class="px-2 py-1 text-left font-mono text-slate-400">Stage / Column</th>
+              ${thCols}
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+    }
+
+    // =========================================================================
+    // 7. MODULE 4: DADDA VS. WALLACE HARDWARE COMPARISON RENDERER
+    // =========================================================================
+    function renderComparisonModule() {
+      const N = state.compareN;
+      document.querySelectorAll('.comp-n-btn').forEach(btn => {
+        const b = parseInt(btn.getAttribute('data-comp-n'), 10);
+        btn.className = b === N
+          ? 'comp-n-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-sky-500 text-slate-950'
+          : 'comp-n-btn px-3 py-1 rounded-lg text-xs font-mono font-bold text-slate-300 hover:text-white';
+      });
+
+      const dadda = simulateDaddaCounts(N);
+      const wallace = simulateWallaceCounts(N);
+
+      // Gate Equivalents (1 FA ≈ 9 NAND2 gates, 1 HA ≈ 4 NAND2 gates)
+      const daddaGates = dadda.totalFA * 9 + dadda.totalHA * 4;
+      const wallaceGates = wallace.totalFA * 9 + wallace.totalHA * 4;
+      const gateSavingPct = Math.round(((wallaceGates - daddaGates) / wallaceGates) * 100);
+
+      const kpiGrid = document.getElementById('compare-kpi-grid');
+      kpiGrid.innerHTML = `
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+          <div class="text-xs font-mono text-slate-400">Reduction Delay Stages</div>
+          <div class="text-2xl font-mono font-extrabold text-white">${dadda.numStages} Stages</div>
+          <div class="text-xs text-emerald-400">Identical speed for Dadda &amp; Wallace (vs ${N - 2} for Array)</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-sky-500/30 space-y-1">
+          <div class="text-xs font-mono text-sky-400">Dadda Tree Compressors</div>
+          <div class="text-2xl font-mono font-extrabold text-white">${dadda.totalFA} FA + ${dadda.totalHA} HA</div>
+          <div class="text-xs text-slate-400">Exactly ${N - 1} Half Adders for any ${N}×${N} size!</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-purple-500/30 space-y-1">
+          <div class="text-xs font-mono text-purple-400">Wallace Tree Compressors</div>
+          <div class="text-2xl font-mono font-extrabold text-white">${wallace.totalFA} FA + ${wallace.totalHA} HA</div>
+          <div class="text-xs text-slate-400">Uses ${wallace.totalHA - dadda.totalHA} more HAs &amp; ${wallace.totalFA - dadda.totalFA} more FAs</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-950 border border-emerald-500/30 space-y-1">
+          <div class="text-xs font-mono text-emerald-400">Tree Area Reduction (Dadda)</div>
+          <div class="text-2xl font-mono font-extrabold text-emerald-300">−${gateSavingPct}% Tree Gates</div>
+          <div class="text-xs text-slate-400">${daddaGates} vs ${wallaceGates} NAND2 eq. in reduction tree</div>
+        </div>
+      `;
+
+      // Stage-by-stage bars
+      const daddaWrap = document.getElementById('dadda-stage-breakdown');
+      daddaWrap.innerHTML = dadda.stages.map(st => `
+        <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="font-mono font-bold text-sky-300">Stage ${st.stageNum}</span>
+            <span class="text-slate-400 font-mono ml-2">(Target d = ${st.targetD})</span>
+          </div>
+          <div class="font-mono text-white">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">${st.stageFA} FA</span>
+            <span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 ml-1">${st.stageHA} HA</span>
+          </div>
+        </div>
+      `).join('');
+
+      const wallaceWrap = document.getElementById('wallace-stage-breakdown');
+      wallaceWrap.innerHTML = wallace.stages.map(st => `
+        <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-between">
+          <div>
+            <span class="font-mono font-bold text-purple-300">Stage ${st.stageNum}</span>
+            <span class="text-slate-400 font-mono ml-2">(Max Height → ${st.maxHeightAfter})</span>
+          </div>
+          <div class="font-mono text-white">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">${st.stageFA} FA</span>
+            <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 ml-1">${st.stageHA} HA</span>
+          </div>
+        </div>
+      `).join('');
+
+      // Full VLSI Scaling Table
+      const sizes = [4, 6, 8, 12, 16];
+      const tbody = document.getElementById('vlsi-scaling-tbody');
+      tbody.innerHTML = sizes.map(sz => {
+        const d = simulateDaddaCounts(sz);
+        const w = simulateWallaceCounts(sz);
+        const dGates = d.totalFA * 9 + d.totalHA * 4;
+        const wGates = w.totalFA * 9 + w.totalHA * 4;
+        const save = Math.round(((wGates - dGates) / wGates) * 100);
+        const highlight = sz === N ? 'bg-sky-500/10' : '';
+        return `
+          <tr class="${highlight} hover:bg-slate-900/60">
+            <td class="py-2.5 px-3 font-bold text-white">${sz}×${sz} (${sz * sz} PPs)</td>
+            <td class="py-2.5 px-3 text-slate-300">${d.numStages} stages</td>
+            <td class="py-2.5 px-3 text-sky-300 font-semibold">${d.totalFA} FA, ${d.totalHA} HA</td>
+            <td class="py-2.5 px-3 text-purple-300">${w.totalFA} FA, ${w.totalHA} HA</td>
+            <td class="py-2.5 px-3 text-emerald-400 font-semibold">−${save}% (${w.totalHA - d.totalHA} fewer HAs)</td>
+            <td class="py-2.5 px-3 text-slate-300">${d.cpaWidth}-bit vs ${w.cpaWidth}-bit</td>
+            <td class="py-2.5 px-3 text-slate-400">${sz - 2} stages (Array)</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 8. TAB NAVIGATION & EVENT LISTENERS
+    // =========================================================================
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      const activePanel = document.getElementById(`panel-${tabId}`);
+      if (activePanel) activePanel.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        const t = btn.getAttribute('data-tab');
+        btn.className = t === tabId
+          ? 'nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all bg-sky-500 text-slate-950 font-semibold shadow-sm'
+          : 'nav-tab-btn px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800';
+      });
+
+      if (tabId === 'sim') {
+        rebuildSimulation();
+      } else if (tabId === 'compare') {
+        renderComparisonModule();
+      }
+    }
+
+    function stopAutoPlay() {
+      if (state.sim.autoPlayTimer) {
+        clearInterval(state.sim.autoPlayTimer);
+        state.sim.autoPlayTimer = null;
+      }
+      const btn = document.getElementById('btn-play-auto');
+      if (btn) {
+        btn.textContent = '▶ Auto-Play Stages';
+        btn.className = 'px-3.5 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition shadow-sm';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Top Nav Tabs
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stopAutoPlay();
+          switchTab(btn.getAttribute('data-tab'));
+        });
+      });
+
+      // Module 1 Buttons
+      document.getElementById('btn-goto-rules').addEventListener('click', () => switchTab('rules'));
+      document.getElementById('btn-jump-sim').addEventListener('click', () => switchTab('sim'));
+      document.getElementById('btn-gravity-shifted').addEventListener('click', () => {
+        state.gravityCompacted = false;
+        renderGravityDemo();
+      });
+      document.getElementById('btn-gravity-compacted').addEventListener('click', () => {
+        state.gravityCompacted = true;
+        renderGravityDemo();
+      });
+
+      document.getElementById('btn-comp-fa').addEventListener('click', () => {
+        state.compMode = 'FA';
+        renderCompressorPlayground();
+      });
+      document.getElementById('btn-comp-ha').addEventListener('click', () => {
+        state.compMode = 'HA';
+        renderCompressorPlayground();
+      });
+      document.getElementById('comp-in-x').addEventListener('click', () => {
+        state.compInputs.x ^= 1;
+        renderCompressorPlayground();
+      });
+      document.getElementById('comp-in-y').addEventListener('click', () => {
+        state.compInputs.y ^= 1;
+        renderCompressorPlayground();
+      });
+      document.getElementById('comp-in-z').addEventListener('click', () => {
+        state.compInputs.z ^= 1;
+        renderCompressorPlayground();
+      });
+
+      // Module 2 Quiz Buttons
+      document.getElementById('quiz-fa-inc').addEventListener('click', () => {
+        state.quiz.userFA = Math.min(5, state.quiz.userFA + 1);
+        updateQuizUI();
+      });
+      document.getElementById('quiz-fa-dec').addEventListener('click', () => {
+        state.quiz.userFA = Math.max(0, state.quiz.userFA - 1);
+        updateQuizUI();
+      });
+      document.getElementById('quiz-ha-inc').addEventListener('click', () => {
+        state.quiz.userHA = Math.min(5, state.quiz.userHA + 1);
+        updateQuizUI();
+      });
+      document.getElementById('quiz-ha-dec').addEventListener('click', () => {
+        state.quiz.userHA = Math.max(0, state.quiz.userHA - 1);
+        updateQuizUI();
+      });
+      document.getElementById('btn-quiz-check').addEventListener('click', checkQuizAnswer);
+      document.getElementById('btn-quiz-next').addEventListener('click', () => {
+        currentQuizIdx++;
+        loadQuizScenario(currentQuizIdx);
+      });
+      document.getElementById('btn-rules-to-sim').addEventListener('click', () => switchTab('sim'));
+
+      // Module 3 Simulator Controls
+      document.querySelectorAll('.bit-width-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stopAutoPlay();
+          const newN = parseInt(btn.getAttribute('data-bits'), 10);
+          state.sim.N = newN;
+          if (newN === 4) { state.sim.opA = 13; state.sim.opB = 11; }
+          if (newN === 6) { state.sim.opA = 53; state.sim.opB = 45; }
+          if (newN === 8) { state.sim.opA = 219; state.sim.opB = 181; }
+          state.sim.stageIdx = 2; // Jump to Stage 1 reduction by default
+          state.sim.focusedCol = null;
+          rebuildSimulation();
+        });
+      });
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          stopAutoPlay();
+          const p = btn.getAttribute('data-preset');
+          const maxVal = (1 << state.sim.N) - 1;
+          if (p === 'textbook') {
+            state.sim.opA = state.sim.N === 4 ? 13 : (state.sim.N === 6 ? 53 : 219);
+            state.sim.opB = state.sim.N === 4 ? 11 : (state.sim.N === 6 ? 45 : 181);
+          } else if (p === 'max') {
+            state.sim.opA = maxVal;
+            state.sim.opB = maxVal;
+          } else if (p === 'alt') {
+            state.sim.opA = parseInt('10101010'.slice(0, state.sim.N), 2);
+            state.sim.opB = parseInt('01010101'.slice(0, state.sim.N), 2);
+          } else if (p === 'random') {
+            state.sim.opA = Math.floor(Math.random() * (maxVal + 1));
+            state.sim.opB = Math.floor(Math.random() * (maxVal + 1));
+          }
+          rebuildSimulation();
+        });
+      });
+
+      document.getElementById('input-op-a').addEventListener('input', e => {
+        state.sim.opA = parseInt(e.target.value, 10) || 0;
+        rebuildSimulation();
+      });
+      document.getElementById('input-op-b').addEventListener('input', e => {
+        state.sim.opB = parseInt(e.target.value, 10) || 0;
+        rebuildSimulation();
+      });
+
+      document.getElementById('btn-prev-stage').addEventListener('click', () => {
+        stopAutoPlay();
+        state.sim.stageIdx = Math.max(0, state.sim.stageIdx - 1);
+        state.sim.focusedCol = null;
+        rebuildSimulation();
+      });
+
+      document.getElementById('btn-next-stage').addEventListener('click', () => {
+        stopAutoPlay();
+        const maxIdx = currentSimData.reductionStages.length + 2;
+        state.sim.stageIdx = Math.min(maxIdx, state.sim.stageIdx + 1);
+        state.sim.focusedCol = null;
+        rebuildSimulation();
+      });
+
+      document.getElementById('btn-play-auto').addEventListener('click', () => {
+        if (state.sim.autoPlayTimer) {
+          stopAutoPlay();
+          return;
+        }
+        const btn = document.getElementById('btn-play-auto');
+        btn.textContent = '⏸ Pause Auto-Play';
+        btn.className = 'px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-semibold transition shadow-sm';
+        state.sim.focusedCol = null;
+        state.sim.stageIdx = 0;
+        rebuildSimulation();
+
+        state.sim.autoPlayTimer = setInterval(() => {
+          const maxIdx = currentSimData.reductionStages.length + 2;
+          if (state.sim.stageIdx < maxIdx) {
+            state.sim.stageIdx++;
+            rebuildSimulation();
+          } else {
+            stopAutoPlay();
+          }
+        }, 1600);
+      });
+
+      // Micro-step column scanner buttons
+      document.getElementById('btn-col-all').addEventListener('click', () => {
+        state.sim.focusedCol = null;
+        rebuildSimulation();
+      });
+      document.getElementById('btn-col-prev').addEventListener('click', () => {
+        if (state.sim.focusedCol === null) {
+          state.sim.focusedCol = 0;
+        } else {
+          state.sim.focusedCol = Math.max(0, state.sim.focusedCol - 1);
+        }
+        rebuildSimulation();
+      });
+      document.getElementById('btn-col-next').addEventListener('click', () => {
+        if (state.sim.focusedCol === null) {
+          state.sim.focusedCol = 0;
+        } else if (state.sim.focusedCol < currentSimData.numCols - 1) {
+          state.sim.focusedCol++;
+        } else {
+          state.sim.focusedCol = null;
+        }
+        rebuildSimulation();
+      });
+
+      // Module 4 Comparison Buttons
+      document.querySelectorAll('.comp-n-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.compareN = parseInt(btn.getAttribute('data-comp-n'), 10);
+          renderComparisonModule();
+        });
+      });
+
+      // Initial renders
+      renderGravityDemo();
+      renderCompressorPlayground();
+      loadQuizScenario(currentQuizIdx);
+      rebuildSimulation();
+      renderComparisonModule();
+    });
+  </script>
+</body>
+</html>

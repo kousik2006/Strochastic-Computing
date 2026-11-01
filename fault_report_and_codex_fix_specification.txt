@@ -1,0 +1,283 @@
+TARGET FILE: add + multriplication.html
+TASK FOR CODEX: Fix all 10 logic, bit-width scaling, quasi-random sequence, and UI synchronization bugs listed below while preserving the 8-bit notebook multiplication baseline.
+
+========================================================================
+FAULT 1: Addition inputs (addA, addB) do not scale when switching bit width (8-bit, 16-bit, 32-bit)
+========================================================================
+LOCATION:
+- Function: setAddInputRange()
+- Event listener: $('addWidth').addEventListener('change', ...) inside initAddition()
+
+ROOT CAUSE:
+In the Multiplication tab, setInputRange(preserveNorm=true, oldWidth=null) scales A and B proportionally when changing bit width so the normalized probability $P = \text{value} / (2^N - 1)$ remains constant.
+In the Addition tab, setAddInputRange() only clamps addA and addB without scaling. When switching from 8-bit ($\text{max} = 255$) to 16-bit ($\text{max} = 65535$) or 32-bit ($\text{max} = 4294967295$), addA stays 45 and addB stays 156. Relative to $2^{16}-1$ or $2^{32}-1$, those values are near zero, producing all-zero bitstreams for short $L$.
+
+FIX INSTRUCTIONS:
+1. Replace setAddInputRange() with a width-scaling version matching setInputRange():
+```javascript
+function setAddInputRange(preserveNorm=false, oldWidth=null){
+  const width=+$('addWidth').value, max=maxForBits(width);
+  const oldMax=oldWidth?maxForBits(oldWidth):max;
+  let a=Number($('addA').value), b=Number($('addB').value);
+  if(preserveNorm && oldWidth && Number.isFinite(a) && Number.isFinite(b)){
+    a=Math.round((a/oldMax)*max);
+    b=Math.round((b/oldMax)*max);
+  }
+  $('addA').max=String(max);
+  $('addB').max=String(max);
+  $('addSeedA').max=String(max);
+  $('addSeedB').max=String(max);
+  $('addA').value=String(clamp(Math.round(a),0,max));
+  $('addB').value=String(clamp(Math.round(b),0,max));
+  if(+$('addSeedA').value>max)$('addSeedA').value=1;
+  if(+$('addSeedB').value>max)$('addSeedB').value=1;
+}
+```
+2. Track window._oldAddWidth = 8 in initAddition() and pass (true, old) into setAddInputRange(true, old) when #addWidth changes.
+
+========================================================================
+FAULT 2: Fatal phase collision between Sobol (offset = 1) and deterministic MUX select (101010...)
+========================================================================
+LOCATION:
+- Functions: sobolSequence(L), sobolStream(value, L, width, offset), addMakeStream(), addRun()
+
+ROOT CAUSE:
+1. sobolSequence(L) starts with seq[0] = 0.
+2. Stream A uses offset = 0 (a[i] compares A against seq[i]) and Stream B uses offset = 1 (b[i] compares B against seq[i + 1]).
+3. addSelectStream(L) produces sel = [1, 0, 1, 0, ...], which is 1 on even indices ($i = 2k$) and 0 on odd indices ($i = 2k + 1$).
+4. In addRun(), mux[i] = sel[i] ? b[i] : a[i]:
+   - On even cycles ($i = 2k$), sel[2k] = 1 selects b[2k], which compares B against seq[2k + 1].
+   - On odd cycles ($i = 2k + 1$), sel[2k + 1] = 0 selects a[2k + 1], which compares A against seq[2k + 1].
+5. Every even Sobol point (seq[0], seq[2], seq[4], ...) is completely discarded by the MUX, and every odd Sobol point (seq[1], seq[3], ...) is used twice! In particular, a[0] = 1 (from seq[0] = 0) is always thrown away at i = 0 because sel[0] = 1 selects b[0].
+
+========================================================================
+FAULT 3: 1D Sobol offset (offset = 1) creates strong negative correlation on even cycles
+========================================================================
+LOCATION:
+- Functions: sobolSequence(L), sobolStream(value, L, width, offset), addMakeStream()
+
+ROOT CAUSE:
+In 1D Gray-code Sobol generation, for every even index $i = 2k$, transitioning from $n = 2k$ to $n = 2k + 1$ XORs with direction number $V[0] = 2^{31}$ (the MSB, representing $0.5$). Thus seq[2k] and seq[2k + 1] always lie in opposite halves of $[0, 1)$. For any $P(A) \le 0.5$ and $P(B) \le 0.5$, a[2k] and b[2k] can never both be 1 on even cycles.
+
+FIX INSTRUCTIONS FOR FAULTS 2 AND 3:
+1. Add a 2nd-dimension Sobol sequence generator (primitive polynomial $x^2 + x + 1$, initial direction numbers $m_1 = 1, m_2 = 3$):
+```javascript
+function sobolSequenceDim2(L){
+  const V=new Array(32);
+  let m1=1,m2=3;
+  V[0]=(1<<31)>>>0;
+  V[1]=(3<<30)>>>0;
+  for(let i=2;i<32;i++){
+    const mNext=(m1^(m1<<2)^(m2<<1))>>>0;
+    m1=m2;m2=mNext;
+    V[i]=(m2<<(31-i))>>>0;
+  }
+  const seq=new Array(L);
+  let x=0;
+  for(let n=0;n<L;n++){
+    if(n===0)x=0;
+    else{let c=0,v=n-1;while((v&1)!==0){v>>>=1;c++;}x=(x^V[c])>>>0;}
+    seq[n]=x>>>0;
+  }
+  return seq;
+}
+```
+2. Keep sobolStream(value, L, width, offset) unchanged for 8-bit Multiplication so the 8-bit notebook multiplication baseline is preserved.
+3. For 16/32-bit Multiplication and for Addition (OR and MUX), use Dimension 1 (sobolSequence) for Stream A and Dimension 2 (sobolSequenceDim2) for Stream B, AND for MUX addition ensure the active cycles of A (odd i) and B (even i) step through consecutive prefix points of their Sobol sequences (index $\lfloor i/2 \rfloor$) or use 2D Sobol streams so that no low-discrepancy Sobol points are skipped by the alternating select line:
+```javascript
+function addSobolStreams(A,B,L,width){
+  const max=maxForBits(width),shift=32-width;
+  const seqA=sobolSequence(L),seqB=sobolSequenceDim2(L);
+  const thr=(x,val)=>val<=0?0:(val>=max?1:((width===32?x>>>0:x>>>shift)<val?1:0));
+  // Full L-bit streams for A, B, and OR using independent 2D Sobol dimensions
+  const a=seqA.map(x=>thr(x,A));
+  const b=seqB.map(x=>thr(x,B));
+  // For deterministic 1010... MUX, sel[i]=1 (even i) selects B and sel[i]=0 (odd i) selects A.
+  // Clock each operand's Sobol prefix on the cycles where it is selected so all L/2 prefix points are used:
+  const half=Math.ceil(L/2);
+  const seqMuxA=sobolSequence(half),seqMuxB=sobolSequenceDim2(half);
+  const mux=new Array(L);
+  for(let i=0;i<L;i++){
+    const k=i>>1;
+    mux[i]=(i%2===0)?thr(seqMuxB[k],B):thr(seqMuxA[k],A);
+  }
+  return {a,b,mux};
+}
+```
+Update addRun() so that when method === 'Sobol', it uses addSobolStreams(A, B, L, width) for a, b, and mux (and computes or = a.map((x,i) => x | b[i])).
+
+========================================================================
+FAULT 4: edStreamScalable() (16-bit and 32-bit ED) zeroes out small inputs and phase-locks at 50%
+========================================================================
+LOCATION:
+- Function: edStreamScalable(value, L, width, seed)
+
+ROOT CAUSE:
+1. Math.floor(((i + 1) * value) / max) truncates total ones to $\lfloor L \cdot \text{value} / \text{max} \rfloor$, producing zero ones whenever $\text{value} < \text{max} / L$ and introducing a negative representation bias.
+2. It generates a periodic pulse train instead of a bit-reversed quasi-random even-distribution sequence.
+3. For seed = 43 (Stream B), it circularly shifts by 43 % L (an odd shift). At 50% density ($P = 0.5$), Stream A (seed = 42) is [0, 1, 0, 1, ...] and Stream B (seed = 43) is [1, 0, 1, 0, ...]:
+   - Multiplication (A AND B) outputs 0 everywhere.
+   - Addition MUX with sel = [1, 0, 1, 0, ...] outputs 1 everywhere (100% ones, doubling the true sum).
+
+FIX INSTRUCTIONS:
+Replace edStreamScalable(value, L, width, seed) with a bit-reversed quasi-random permutation and seed-dependent scramble:
+```javascript
+function edStreamScalable(value,L,width,seed){
+  const max=maxForBits(width);
+  if(value<=0)return new Array(L).fill(0);
+  if(value>=max)return new Array(L).fill(1);
+  const targetOnes=Math.round((value/max)*L);
+  const logL=Math.round(Math.log2(L));
+  // Use distinct bit-reversal scrambling per seed so A (42) and B (43) are uncorrelated and evenly distributed
+  const mask=(seed===42?0:((seed*2654435761)>>>(32-logL)))&(L-1);
+  const out=new Array(L);
+  for(let i=0;i<L;i++){
+    let rev=0,x=i;
+    for(let b=0;b<logL;b++){rev=(rev<<1)|(x&1);x>>=1;}
+    const rank=(seed===42)?rev:(((rev*5+1)&(L-1))^mask);
+    out[i]=rank<targetOnes?1:0;
+  }
+  return out;
+}
+```
+Note: Since $L$ is always a power of 2 ($16 \dots 1024$), $\text{rank} \mapsto ((\text{rev} \cdot 5 + 1) \pmod L) \oplus \text{mask}$ is a bijection on $\{0, \dots, L-1\}$, guaranteeing the exact same targetOnes count while decorrelating Stream A and Stream B across both AND and alternating MUX operations.
+
+========================================================================
+FAULT 5: Signed 32-bit bitwise AND overflow in lfsrStates() corrupts initial 32-bit state
+========================================================================
+LOCATION:
+- Function: lfsrStates(seed, taps, width, L)
+
+ROOT CAUSE:
+In JavaScript, bitwise AND (&) returns a signed 32-bit integer.
+In lfsrStates():
+  let s=(seed>>>0)&mask;
+When width === 32 and seed >= 2^31 (such as default Stream B seed 2654435769), (seed >>> 0) & 0xFFFFFFFF evaluates to -1640531527 (negative). At cycle i = 0, a[0] is negative, so s <= value evaluates to 1 even when value = 0.
+
+FIX INSTRUCTIONS:
+Add >>> 0 after & mask in lfsrStates():
+```javascript
+function lfsrStates(seed,taps,width,L){
+  const mask=width===32?0xFFFFFFFF:(2**width-1);
+  let s=((seed>>>0)&mask)>>>0; if(s===0)s=1;
+  const a=new Array(L);
+  for(let i=0;i<L;i++){a[i]=s;s=lfsrNext(s,taps,width);}
+  return a;
+}
+```
+
+========================================================================
+FAULT 6: runAddBenchmark() hardcodes width = 8 while addConfigFor() reads #addWidth from UI
+========================================================================
+LOCATION:
+- Functions: addConfigFor(op), addMakeStream(method, value, L, width, op), runAddBenchmark()
+
+ROOT CAUSE:
+runAddBenchmark() sets const width = 8, but addMakeStream('LFSR', ...) calls addConfigFor(), which reads const width = +$('addWidth').value from the DOM. If the user has selected 16-bit or 32-bit in #addWidth, addConfigFor() returns 16-bit or 32-bit taps (e.g. [15, 13, 12, 10]) and seeds > 255. When lfsrStates(..., width=8, L) masks the state to 8 bits, all tap bits >= 8 are zero, shifting the LFSR into the all-zero state (0) and outputting 1 forever.
+
+FIX INSTRUCTIONS:
+Update addConfigFor(op, forcedWidth=null) so that if forcedWidth is provided and differs from +$('addWidth').value, it uses the default preset for forcedWidth (e.g., for forcedWidth === 8: P2 taps [7,5,4,1] with seed 198 for A and seed 86 for B):
+```javascript
+function addConfigFor(op,forcedWidth=null){
+  const uiWidth=+$('addWidth').value;
+  const width=forcedWidth||uiWidth;
+  if(width!==uiWidth){
+    if(width===8)return{taps:PRESETS[8].P2.taps.slice(),seed:op==='A'?198:86,label:PRESETS[8].P2.label,key:'P2'};
+    if(width===16)return{taps:PRESETS[16][op==='A'?'P16A':'P16B'].taps.slice(),seed:op==='A'?44257:48879,label:'16-bit preset',key:op==='A'?'P16A':'P16B'};
+    return{taps:PRESETS[32][op==='A'?'P32A':'P32B'].taps.slice(),seed:op==='A'?305419896:2654435769,label:'32-bit preset',key:op==='A'?'P32A':'P32B'};
+  }
+  const key=$(op==='A'?'addPolyA':'addPolyB').value,seed=Number($(op==='A'?'addSeedA':'addSeedB').value),tapsEl=$(op==='A'?'addTapsA':'addTapsB');
+  let taps,label;
+  if(key==='CUSTOM'){taps=parseTaps(tapsEl.value,width);label='Custom';}
+  else{const p=getPreset(width,key);if(!p)throw new Error('Invalid addition LFSR preset for '+op+'.');taps=p.taps.slice();label=p.label;tapsEl.value=taps.join(',');}
+  if(!Number.isInteger(seed)||seed<=0||seed>maxForBits(width))throw new Error(`Addition LFSR seed ${op} must be an integer from 1 to ${maxForBits(width)}.`);
+  return{taps,seed,label,key};
+}
+```
+And in addMakeStream(method, value, L, width, op), call addConfigFor(op === 0 ? 'A' : 'B', width).
+
+========================================================================
+FAULT 7: #addCopyMulLfsr crashes when Multiplication and Addition have different bit widths
+========================================================================
+LOCATION:
+- Event listener: $('addCopyMulLfsr').addEventListener('click', ...) in initAddition()
+
+ROOT CAUSE:
+It sets $('addWidth').value = String(w) and immediately sets $('addPolyA').value = $('polyA').value before calling populateAddPolySelect('A') and populateAddPolySelect('B'). Because the <select> options still belong to the old width, .value becomes "" and updateAddPolyInfo() throws a TypeError.
+
+FIX INSTRUCTIONS:
+Replace the #addCopyMulLfsr click listener with:
+```javascript
+$('addCopyMulLfsr').addEventListener('click',()=>{
+  try{
+    const old=window._oldAddWidth||+$('addWidth').value;
+    const w=currentWidth();
+    $('addWidth').value=String(w);
+    window._oldAddWidth=w;
+    setAddInputRange(true,old);
+    populateAddPolySelect('A',$('polyA').value);
+    populateAddPolySelect('B',$('polyB').value);
+    $('addPolyA').value=$('polyA').value;
+    $('addPolyB').value=$('polyB').value;
+    $('addSeedA').value=$('seedA').value;
+    $('addSeedB').value=$('seedB').value;
+    $('addTapsA').value=$('tapsA').value;
+    $('addTapsB').value=$('tapsB').value;
+    updateAddPolyInfo('A');
+    updateAddPolyInfo('B');
+    renderAddition();
+  }catch(e){console.error(e);}
+});
+```
+
+========================================================================
+FAULT 8: Changing #addWidth hardcodes 'P2' for 16-bit and 32-bit presets
+========================================================================
+LOCATION:
+- Event listener: $('addWidth').addEventListener('change', ...) in initAddition()
+
+ROOT CAUSE:
+populateAddPolySelect('A', 'P2') and populateAddPolySelect('B', 'P2') are called for all widths. Since 'P2' does not exist in 16-bit or 32-bit presets, both A and B fall back to the first option (P16A or P32A) instead of distinct polynomials (P16A/P16B or P32A/P32B).
+
+FIX INSTRUCTIONS:
+In the #addWidth change listener:
+```javascript
+$('addWidth').addEventListener('change',()=>{
+  const old=window._oldAddWidth||8;
+  const w=+$('addWidth').value;
+  window._oldAddWidth=w;
+  setAddInputRange(true,old);
+  populateAddPolySelect('A',w===8?'P2':(w===16?'P16A':'P32A'));
+  populateAddPolySelect('B',w===8?'P2':(w===16?'P16B':'P32B'));
+  if(w===8){$('addSeedA').value=198;$('addSeedB').value=86;}
+  else if(w===16){$('addSeedA').value=44257;$('addSeedB').value=48879;}
+  else{$('addSeedA').value=305419896;$('addSeedB').value=2654435769;}
+  updateAddPolyInfo('A');
+  updateAddPolyInfo('B');
+  renderAddition();
+});
+```
+
+========================================================================
+FAULT 9: #addArch dropdown ("Compare MUX and OR", "MUX only", "OR only") is ignored
+========================================================================
+LOCATION:
+- Function: renderAddition()
+
+ROOT CAUSE:
+renderAddition() never reads $('addArch').value, so both MUX and OR sections remain visible regardless of selection.
+
+FIX INSTRUCTIONS:
+Inside renderAddition(), read const arch = $('addArch').value; and toggle the visibility of the MUX and OR sections and chart boxes based on whether arch === 'both', arch === 'mux', or arch === 'or'.
+
+========================================================================
+FAULT 10: Duplicate HTML block in "8-bit notebook-ranked LFSR pairs"
+========================================================================
+LOCATION:
+- HTML section inside #multiplicationPanel -> .method ("8-bit notebook-ranked LFSR pairs")
+
+ROOT CAUSE:
+The two columns inside <div class="grid2"> contain identical text ("Current multiplication setup... P2-198 x P2-86").
+
+FIX INSTRUCTIONS:
+Keep the first column as the fixed multiplication setup (P2-198 and P2-86) and update the second column to show the notebook L=16 ranked pair (P3-174 [7,6,1,0] and P3-121 [7,6,1,0]) for reference.
